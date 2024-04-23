@@ -24,3 +24,8 @@ struct TestHTMLText: View {
     
 }
 
+extension String {
+    var containsCyrillic: Bool {
+        return self.range(of: "[а-яА-ЯёЁ]", options: .regularExpression) != nil
+    }
+}

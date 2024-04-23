@@ -10,7 +10,7 @@ import SQLite
 
 class DatabaseManager {
     var db: Connection
-
+    
     init(databaseName: String) {
         do {
             guard let dbPath = Bundle.main.path(forResource: databaseName, ofType: "sqlite3") else {
@@ -21,52 +21,63 @@ class DatabaseManager {
             fatalError("Error connecting to the database: \(error)")
         }
     }
-
-    // Метод для поиска записи в таблице
-    func findRecordInTable(tableName: String, columnName: String, searchValue: String) -> [Translation] {
+    
+    func findRecordInTable<T>(tableName: String, columnName: String, searchValue: T) -> [Row] {
         do {
             let table = Table(tableName)
             let column = Expression<String>(columnName)
-            var translations: [Translation] = []
             let query = table.filter(column.like("\(searchValue)%")).limit(100)
-            let records = try db.prepare(query)
-            for record in records {
-                let translation = Translation(
-                    id: record[Expression<Int>("id")],
-                    word: record[column],
-                    translationShort: record[Expression<String>("translationShort")],
-                    translationId: record[Expression<Int>("translationId")])
-                translations.append(translation)
-                
-            }
-            return translations
+            return try Array(db.prepare(query))
         } catch {
             print("Error finding records: \(error)")
             return []
         }
     }
     
-    func getFullTranslation(word: Translation) -> String? {
-        print(#function)
-        let table = Table("Translations")
-        let column = Expression<Int>("id")
-        let query = table.filter(word.translationId == column)
-        
+    func findMultipleValues(tableName: String, columnName: String, searchValues: [String]) -> [Row] {
         do {
-            guard let record = try db.pluck(query) else { 
-                print("Error to catch full translation")
-                return nil }
-            return record[Expression<String>("translation")]
+            let table = Table(tableName)
+            let column = Expression<String>(columnName)
+            
+            let query = table.filter(searchValues.contains(column))
+            return try Array(db.prepare(query))
         } catch {
-            print("Error to catch full translation", error)
+            print("Error finding multiple values: \(error)")
+            return []
+        }
+    }
+    //new
+    func findRecordWithShortTranslation(tableName: String, columnName: String, searchValue: String) -> Statement? {
+        do {
+            let query = """
+           SELECT id, word, substr(translation, 0, 100) AS shortTranslation
+           FROM \(tableName)
+           WHERE word LIKE '\(searchValue)%'
+           LIMIT 100
+           """
+            let results = try db.prepare(query)
+            return results
+        } catch {
+            print("Database error: \(error)")
             return nil
         }
     }
 }
 
 struct Translation {
+    let isRuDict: Bool
     let id: Int
     let word: String
-    let translationShort: String
-    let translationId: Int
+    let translation: String
+    let transcription: String
+    var translationShort: String {
+        return String(translation.prefix(100)).replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+    }
+}
+
+struct TranslationShort {
+    let isRuDict: Bool
+    let id: Int64
+    let word: String
+    let shortTranslation: String
 }

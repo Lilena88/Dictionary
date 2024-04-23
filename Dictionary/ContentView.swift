@@ -6,27 +6,27 @@
 //
 
 import SwiftUI
+import Combine
 
 struct ContentView: View {
     @EnvironmentObject var vm: MainModelView
     @State private var searchText = ""
-    var searchResult: [Translation] {
+    var searchResult: [TranslationShort] {
         guard !searchText.isEmpty else { return [] }
+        print(vm.search(word: searchText))
         return vm.search(word: searchText)
     }
-    
     var body: some View {
         NavigationStack {
             List(searchResult, id: \.id) { translation in
                 ExtractedView(translation: translation)
-                    .environmentObject(vm)
+                    .environmentObject(RowVM())
             }
             
         }
-        .searchable(text: $searchText)
+        .searchable(text: $searchText, prompt: "word/слово")
         .textInputAutocapitalization(.never)
-        
-        
+        .scrollDismissesKeyboard(.immediately)
         
     }
 }
@@ -36,22 +36,32 @@ struct ContentView: View {
 }
 
 struct ExtractedView: View {
-    @EnvironmentObject var vm: MainModelView
+    @EnvironmentObject var vm: RowVM
     @State private var isExpanded = false
-    var translation: Translation
+    var translation: TranslationShort
+    var content: String {
+        return getStaticHTML(for: vm.getFullTranslation(for: translation))
+        
+    }
     
     var body: some View {
         DisclosureGroup(
+            isExpanded: $isExpanded,
             content: {
-                let fullTranslation = vm.fullTranslation(for: translation)
-                let html = getStaticHTML(for: fullTranslation)
-                TestHTMLText(html: html)
+                if isExpanded {
+                    TestHTMLText(html: content)
+                        .listRowInsets(EdgeInsets(top: 0,
+                                                  leading: 0,
+                                                  bottom: 0,
+                                                  trailing: 16))
+                }
             },
             label: {
                 HStack {
                     Text(translation.word)
-                    Text(translation.translationShort)
+                    Text(translation.shortTranslation.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression))
                         .lineLimit(1)
+                        .foregroundColor(.gray)
                 }
             }
         )
@@ -63,36 +73,32 @@ struct ExtractedView: View {
             <head>
                 <meta charset="utf-8">
                 <style type="text/css">
-                    /*
-                      Custom CSS styling of HTML formatted text.
-                      Note, only a limited number of CSS features are supported by NSAttributedString/UITextView.
-                    */
-
                     body {
                         font: -apple-system-body;
-                        color: \(Color.green);
+                        color: \(Color.black);
                     }
-
+            
                     h1, h2, h3, h4, h5, h6 {
                         color: \(UIColor.green);
                     }
-
-                    a {
-                        color: \(UIColor.blue);
+            
+                    abbr {
+                        color: \(Color.green)
                     }
-
-                    li:last-child {
-                        margin-bottom: 1em;
+                    E {
+                        color: \(Color.gray);
                     }
+            hr {
+              display:none;
+            }
                 </style>
             </head>
             <body>
-                \(string.replacingOccurrences(of: "\n", with: "<br>").replacingOccurrences(of: "\n\n", with: "<br>"))
+            \(string.replacingOccurrences(of: "<E>", with: "<br><E>"))
             </body>
             </html>
             """
     }
-    
-
-    
 }
+
+

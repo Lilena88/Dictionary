@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		852BC3A12BCEA563004D91F2 /* dict.sqlite3 in Resources */ = {isa = PBXBuildFile; fileRef = 852BC3A02BCEA563004D91F2 /* dict.sqlite3 */; };
 		85B1F65E2BBD8EF000BF3428 /* DictionaryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85B1F65D2BBD8EF000BF3428 /* DictionaryApp.swift */; };
 		85B1F6602BBD8EF000BF3428 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85B1F65F2BBD8EF000BF3428 /* ContentView.swift */; };
 		85B1F6622BBD8EF200BF3428 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 85B1F6612BBD8EF200BF3428 /* Assets.xcassets */; };
 		85B1F6652BBD8EF200BF3428 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 85B1F6642BBD8EF200BF3428 /* Preview Assets.xcassets */; };
-		85B1F66C2BBD8F1C00BF3428 /* english-russian.sqlite3 in Resources */ = {isa = PBXBuildFile; fileRef = 85B1F66B2BBD8F1C00BF3428 /* english-russian.sqlite3 */; };
 		85B1F6702BBD919000BF3428 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = 85B1F66F2BBD919000BF3428 /* SQLite */; };
 		85B1F6722BBD91AA00BF3428 /* DataBaseHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85B1F6712BBD91AA00BF3428 /* DataBaseHandler.swift */; };
 		85B1F6742BBDA01A00BF3428 /* MainModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85B1F6732BBDA01A00BF3428 /* MainModelView.swift */; };
@@ -19,12 +19,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		852BC3A02BCEA563004D91F2 /* dict.sqlite3 */ = {isa = PBXFileReference; lastKnownFileType = file; path = dict.sqlite3; sourceTree = "<group>"; };
 		85B1F65A2BBD8EF000BF3428 /* Dictionary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dictionary.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		85B1F65D2BBD8EF000BF3428 /* DictionaryApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryApp.swift; sourceTree = "<group>"; };
 		85B1F65F2BBD8EF000BF3428 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		85B1F6612BBD8EF200BF3428 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		85B1F6642BBD8EF200BF3428 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		85B1F66B2BBD8F1C00BF3428 /* english-russian.sqlite3 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "english-russian.sqlite3"; sourceTree = "<group>"; };
 		85B1F6712BBD91AA00BF3428 /* DataBaseHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataBaseHandler.swift; sourceTree = "<group>"; };
 		85B1F6732BBDA01A00BF3428 /* MainModelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainModelView.swift; sourceTree = "<group>"; };
 		85B1F6792BC46A9500BF3428 /* AttributedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributedText.swift; sourceTree = "<group>"; };
@@ -83,7 +83,7 @@
 		85B1F66D2BBD8F3100BF3428 /* DataBase */ = {
 			isa = PBXGroup;
 			children = (
-				85B1F66B2BBD8F1C00BF3428 /* english-russian.sqlite3 */,
+				852BC3A02BCEA563004D91F2 /* dict.sqlite3 */,
 				85B1F6712BBD91AA00BF3428 /* DataBaseHandler.swift */,
 			);
 			path = DataBase;
@@ -153,9 +153,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				85B1F66C2BBD8F1C00BF3428 /* english-russian.sqlite3 in Resources */,
 				85B1F6652BBD8EF200BF3428 /* Preview Assets.xcassets in Resources */,
 				85B1F6622BBD8EF200BF3428 /* Assets.xcassets in Resources */,
+				852BC3A12BCEA563004D91F2 /* dict.sqlite3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
