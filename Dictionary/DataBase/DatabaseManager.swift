@@ -1,5 +1,5 @@
 //
-//  DataBaseHandler.swift
+//  DatabaseManager.swift
 //  Dictionary
 //
 //  Created by Elena Kim on 4/3/24.
@@ -55,6 +55,7 @@ class DatabaseManager {
            WHERE word LIKE '\(searchValue)%'
            LIMIT 100
            """
+
             let results = try db.prepare(query)
             return results
         } catch {
@@ -80,4 +81,7 @@ struct TranslationShort {
     let id: Int64
     let word: String
     let shortTranslation: String
+    var shortTranslationEdited: String {
+        return shortTranslation.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+    }
 }

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 import SQLite
 import NaturalLanguage
 
@@ -16,10 +17,21 @@ enum Dictionaries: String {
 }
 
 class MainModelView: ObservableObject {
-    
     let engRegex = "^[a-zA-Z]+$"
     let ruRegex = "^[а-яА-ЯёЁ]+$"
     let dbManager = DatabaseManager(databaseName: databaseName)
+    
+    @Published var searchText = "" {
+        didSet {
+            guard !searchText.isEmpty else {
+                translations = []
+                return }
+            let searchResult = self.search(word: searchText)
+            translations = searchResult.map { TranslationViewModel(translation: $0, dbManager: self.dbManager) }
+        }
+    }
+    @Published var translations: [TranslationViewModel] = []
+    
     
     func search(word: String) -> [TranslationShort] {
         var tableName: Dictionaries = .enRu
@@ -36,13 +48,44 @@ class MainModelView: ObservableObject {
         }
         
     }
-    
 }
 
 
-class RowVM: ObservableObject {
-
-    let dbManager = DatabaseManager(databaseName: databaseName)
+class TranslationViewModel: ObservableObject, Identifiable {
+    let dbManager: DatabaseManager
+    private var translation: TranslationShort
+    
+    var id: Int64 {
+        return translation.id
+    }
+    var word: String {
+        return translation.word
+    }
+    
+    var shortTranslation: String {
+        return translation.shortTranslationEdited
+    }
+    
+    var fullTranslation: AttributedString = ""
+    
+    @Published var isExpanded: Bool = false {
+        willSet {
+            if newValue {
+                let full = getFullTranslation(for: translation)
+                let html = getStaticHTML(for: full)
+                fullTranslation = convertHTML(text: html)
+            } else {
+                fullTranslation = ""
+            }
+        }
+    }
+    
+    
+    init(translation: TranslationShort, dbManager: DatabaseManager) {
+        self.translation = translation
+        self.dbManager = dbManager
+    }
+    
     
     func getFullTranslation(for shortTranslation: TranslationShort) -> String {
         if shortTranslation.isRuDict {
@@ -110,5 +153,47 @@ class RowVM: ObservableObject {
         
         print("No match found for regexp: \(regex) text: \(text)")
         return nil
+    }
+    
+    private func getStaticHTML(for string: String) -> String {
+        return """
+            <!doctype html>
+            <head>
+                <meta charset="utf-8">
+                <style type="text/css">
+                    body {
+                        font: -apple-system-body;
+                        color: \(Color.black);
+                    }
+            
+                    h1, h2, h3, h4, h5, h6 {
+                        color: \(UIColor.green);
+                    }
+            
+                    abbr {
+                        color: \(Color.green)
+                    }
+                    E {
+                        color: \(Color.gray);
+                    }
+            hr {
+              display:none;
+            }
+                </style>
+            </head>
+            <body>
+            \(string.replacingOccurrences(of: "<E>", with: "<br><E>"))
+            </body>
+            </html>
+            """
+    }
+    
+    private func convertHTML(text: String) -> AttributedString {
+        if let nsAttributedString = try? NSAttributedString(data: Data(text.utf8), options: [.documentType: NSAttributedString.DocumentType.html, .characterEncoding: NSUTF8StringEncoding], documentAttributes: nil),
+           let attributedString = try? AttributedString(nsAttributedString, including: \.uiKit) {
+            return attributedString
+        } else {
+            return AttributedString(text)
+        }
     }
 }

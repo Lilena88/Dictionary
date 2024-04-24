@@ -13,7 +13,6 @@ struct DictionaryApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(vm)
                 .environment(\.colorScheme, .light)
         }
     }
