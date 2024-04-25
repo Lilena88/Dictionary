@@ -13,7 +13,7 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             List($vm.translations) { $translation in
-                TranslationView(vm: $translation)
+                TranslationView(vm: $translation, linkedWord: $vm.searchText)
                 
             }
             
@@ -31,6 +31,7 @@ struct ContentView: View {
 
 struct TranslationView: View {
     @Binding var vm: TranslationViewModel
+    @Binding var linkedWord: String
     
     var body: some View {
         DisclosureGroup(
@@ -41,6 +42,11 @@ struct TranslationView: View {
                                               leading: 0,
                                               bottom: 0,
                                               trailing: 16))
+                    .environment(\.openURL, OpenURLAction { url in
+                        let word = url.path(percentEncoded: false).dropFirst()
+                        linkedWord = String(word)
+                           return .handled
+                       })
                 
             },
             label: {

@@ -82,6 +82,9 @@ struct TranslationShort {
     let word: String
     let shortTranslation: String
     var shortTranslationEdited: String {
-        return shortTranslation.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+        return shortTranslation
+            .replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+            .replacingOccurrences(of: ",", with: ", ")
+            .replacingOccurrences(of: "  ", with: " ")
     }
 }

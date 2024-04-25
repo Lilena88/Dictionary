@@ -16,6 +16,7 @@
 		85B1F6722BBD91AA00BF3428 /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85B1F6712BBD91AA00BF3428 /* DatabaseManager.swift */; };
 		85B1F6742BBDA01A00BF3428 /* MainModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85B1F6732BBDA01A00BF3428 /* MainModelView.swift */; };
 		85C74FE22BD9579F00E510C1 /* String + Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C74FE12BD9579F00E510C1 /* String + Extensions.swift */; };
+		85C74FE42BDA735800E510C1 /* TranslationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C74FE32BDA735800E510C1 /* TranslationViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		85B1F6712BBD91AA00BF3428 /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
 		85B1F6732BBDA01A00BF3428 /* MainModelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainModelView.swift; sourceTree = "<group>"; };
 		85C74FE12BD9579F00E510C1 /* String + Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String + Extensions.swift"; sourceTree = "<group>"; };
+		85C74FE32BDA735800E510C1 /* TranslationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +95,7 @@
 			isa = PBXGroup;
 			children = (
 				85B1F6732BBDA01A00BF3428 /* MainModelView.swift */,
+				85C74FE32BDA735800E510C1 /* TranslationViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -176,6 +179,7 @@
 			files = (
 				85B1F6602BBD8EF000BF3428 /* ContentView.swift in Sources */,
 				85B1F65E2BBD8EF000BF3428 /* DictionaryApp.swift in Sources */,
+				85C74FE42BDA735800E510C1 /* TranslationViewModel.swift in Sources */,
 				85B1F6722BBD91AA00BF3428 /* DatabaseManager.swift in Sources */,
 				85B1F6742BBDA01A00BF3428 /* MainModelView.swift in Sources */,
 				85C74FE22BD9579F00E510C1 /* String + Extensions.swift in Sources */,
