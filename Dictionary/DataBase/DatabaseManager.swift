@@ -34,34 +34,59 @@ class DatabaseManager {
         }
     }
     
-    func findMultipleValues(tableName: String, columnName: String, searchValues: [String]) -> [Row] {
+    func fetchRows(sql: String) -> Statement? {
         do {
-            let table = Table(tableName)
-            let column = Expression<String>(columnName)
-            
-            let query = table.filter(searchValues.contains(column))
-            return try Array(db.prepare(query))
+            let results = try db.prepare(sql)
+            return results
         } catch {
-            print("Error finding multiple values: \(error)")
-            return []
+            print("[fetchRows] error: \(error) sql: \(sql)")
+            return nil
         }
     }
-    //new
+    
+    func findMultipleValues(words: [String]) -> Statement? {
+        return fetchRows(sql: """
+        select id, word, translation
+        from enRu
+        where word IN ("\(words.joined(separator: "\",\""))")
+        order by instr(",\(words.joined(separator: ",")),",     ',' || word || ',');
+        """)
+    }
+    
     func findRecordWithShortTranslation(tableName: String, columnName: String, searchValue: String) -> Statement? {
-        do {
-            let query = """
+        let preparedValue = searchValue
+            .lowercased()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        var result = findByWordWithShortTranslation(tableName: tableName, searchValue: searchValue)
+        
+        if preparedValue.count <= 2 {
+            return result
+        }
+        
+        if (result?.reduce(0) { $0 + $1.count } ?? 0) == 0 {
+            result = findByWordWithShortTranslation(tableName: tableName, searchValue: substr(string: preparedValue, endOffset: -1))
+        }
+        
+        if (result?.reduce(0) { $0 + $1.count } ?? 0) == 0 {
+            result = findByWordWithShortTranslation(tableName: tableName, searchValue: substr(string: preparedValue, endOffset: -2))
+        }
+        
+        return result
+    }
+    
+    func substr(string: String, endOffset: Int) -> String {
+        let endIndex = string.index(string.endIndex, offsetBy: endOffset)
+        return String(string[..<endIndex])
+    }
+    
+    func findByWordWithShortTranslation(tableName: String, searchValue: String) -> Statement? {
+        return fetchRows(sql: """
            SELECT id, word, substr(translation, 0, 100) AS shortTranslation
            FROM \(tableName)
            WHERE word LIKE '\(searchValue)%'
            LIMIT 100
-           """
-
-            let results = try db.prepare(query)
-            return results
-        } catch {
-            print("Database error: \(error)")
-            return nil
-        }
+           """)
     }
 }
 

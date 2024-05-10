@@ -47,19 +47,24 @@ class TranslationViewModel: ObservableObject, Identifiable {
     
     func getFullTranslation(for shortTranslation: TranslationShort) -> String {
         if shortTranslation.isRuDict {
-            return fullTranslationForRus(word: shortTranslation.word, with: shortTranslation.shortTranslation)
+            return fullTranslationForRus(ruWord: shortTranslation.word, with: shortTranslation.shortTranslation)
         } else {
             return fullTranslationForEng(wordID: shortTranslation.id)
         }
         
     }
     
-    private func fullTranslationForRus(word: String, with engTranslations: String) -> String {
-        let engWordsArray = enTranslations(for: engTranslations)
-        let fullArticle = engWordsArray.reduce("") { partialResult, currentRow in
-            let engTranslatedArticle = getTranslateOnly(for: word, in: currentRow[Expression<String>("translation")], engWord: currentRow[Expression<String>("word")])
-            return partialResult + engTranslatedArticle
+    private func fullTranslationForRus(ruWord: String, with engTranslations: String) -> String {
+        guard let engWordsArray = enTranslations(for: engTranslations) else { return "" }
+        var fullArticle = ""
+        for row in engWordsArray {
+            let engWord = row[1] as? String ?? ""
+            let translation = row[2] as? String ?? ""
+            let engTranslatedArticle = getTranslateOnly(for: ruWord, in: translation, engWord: engWord)
+            fullArticle += "<LI>\(engTranslatedArticle)</LI>"
         }
+        fullArticle += ""
+
         return fullArticle
         
     }
@@ -67,27 +72,27 @@ class TranslationViewModel: ObservableObject, Identifiable {
     private func fullTranslationForEng(wordID: Int64) -> String {
         let rows = dbManager.findRecordInTable(tableName: Dictionaries.enRu.rawValue, columnName: "id", searchValue: wordID)
         guard let firstRow = rows.first else { return "" }
-        let fullTranslation = firstRow[Expression<String>("translation")]
+        var fullTranslation = firstRow[Expression<String>("translation")]
         self.transcription = firstRow[Expression<String>("transcription")]
         return fullTranslation
         
     }
   
-    private func enTranslations(for ruWords: String) -> [Row] {
+    private func enTranslations(for ruWords: String) -> Statement? {
         let words = ruWords.components(separatedBy: ",")
-        return dbManager.findMultipleValues(
-            tableName: Dictionaries.enRu.rawValue,
-            columnName: "word",
-            searchValues: words)
+        return dbManager.findMultipleValues(words: words)
     }
     
     private func getTranslateOnly(for ruWord: String, in article: String, engWord: String) -> String {
-        let pattern = "(?<=<P>)(?:(?!<P>)[\\s\\S])*?\\b\(ruWord)\\b.*?(?=</P>)"
+        let pattern = "[^\n]*?\(ruWord)[^\n]*"
         
-        if let match = findByRegexp(by: pattern, in: article) {
-            return "<P>\(engWord) - \(match)</P>"
+        if var match = findByRegexp(by: pattern, in: article) {
+            match = match
+                .replacingOccurrences(of: "<P>", with: "")
+                .replacingOccurrences(of: "</P>", with: "")
+            return "\(engWord) ― \(match)"
         }
-        return article
+        return engWord
     }
     
 //MARK: Work with strings
@@ -109,43 +114,56 @@ class TranslationViewModel: ObservableObject, Identifiable {
         return nil
     }
     private func addLinks(to article: String) -> String {
+        //return article
         let links = article.replacingOccurrences(of: "[\\w']+(?![^<]*>)(?![^<>]*?</abbr>)", with: "<a href='$0'>$0</a>", options: .regularExpression, range: nil)
         return links
     }
     
     private func getStaticHTML(for string: String) -> String {
+        var article = string
+            .replacingOccurrences(of: "<E>", with: "<UL><E>")
+            .replacingOccurrences(of: "</E>", with: "</E></UL>")
+            .replacingOccurrences(of: "<P>", with: "<LI>")
+            .replacingOccurrences(of: "</P>", with: "</LI>")
+        
+        print(article)
+        
         return """
             <!doctype html>
             <head>
                 <meta charset="utf-8">
                 <style type="text/css">
-                    body {
+                    BODY {
                         font: -apple-system-body;
                         color: \(Color.black);
                     }
-            
-                    h1, h2, h3, h4, h5, h6 {
-                        color: \(UIColor.green);
-                    }
-            
-                    abbr {
+                    ABBR {
                         color: \(Color.green)
                     }
                     E {
                         color: \(Color.gray);
+                        display: list-item;
                     }
-                    hr {
+                    HR {
                       display:none;
                     }
-                    a {
-                        font: -apple-system-body;
-                        color: \(Color.black);
-                        text-decoration: none;
+                    A {
+                        font: inherit;
+                        color: inherit;
+                        text-decoration: inherit;
                     }
+                    OL,LI {
+                        padding: 0px;
+                        margin: 0px;
+                    }
+                    H5{text-align:right;}
                 </style>
             </head>
             <body>
-            \(string.replacingOccurrences(of: "<E>", with: "<br><E>"))
+            <H5>\(self.transcription)</H5>
+            <OL>
+                \(article)
+            </OL>
             </body>
             </html>
             """

@@ -21,13 +21,18 @@ class MainModelView: ObservableObject {
     let ruRegex = "^[а-яА-ЯёЁ]+$"
     let dbManager = DatabaseManager(databaseName: databaseName)
     
-    @Published var searchText = "дерево" {
+    @Published var searchText = "" {
         didSet {
             guard !searchText.isEmpty else {
                 translations = []
-                return }
+                return
+            }
             let searchResult = self.search(word: searchText)
-            translations = searchResult.map { TranslationViewModel(translation: $0, dbManager: self.dbManager) }
+            translations = searchResult.map {
+                let vm = TranslationViewModel(translation: $0, dbManager: self.dbManager)
+                vm.isExpanded = searchResult.count == 1
+                return vm
+            }
         }
     }
     @Published var translations: [TranslationViewModel] = []

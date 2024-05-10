@@ -21,6 +21,9 @@ struct ContentView: View {
         .searchable(text: $vm.searchText, prompt: "word/слово")
         .textInputAutocapitalization(.never)
         .scrollDismissesKeyboard(.immediately)
+        .onAppear(perform: {
+            vm.searchText = "tree"
+        })
         
     }
 }
@@ -52,6 +55,8 @@ struct TranslationView: View {
             label: {
                 HStack {
                     Text(vm.word)
+                        .lineLimit(1)
+                        .layoutPriority(1)
                     Text(vm.shortTranslation)
                         .lineLimit(1)
                         .foregroundColor(.gray)
