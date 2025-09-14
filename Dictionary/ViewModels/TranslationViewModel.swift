@@ -4,7 +4,7 @@
 //
 //  Created by Elena Kim on 4/25/24.
 //
-
+import UIKit
 import SwiftUI
 import SQLite
 
@@ -23,27 +23,25 @@ class TranslationViewModel: ObservableObject, Identifiable {
         return translation.shortTranslationEdited
     }
     
-    var fullTranslation: AttributedString = ""
+    @Published var fullTranslation: AttributedString = ""
     var transcription: String = ""
-    
-    @Published var isExpanded: Bool = false {
-        willSet {
-            if newValue {
-                let full = getFullTranslation(for: translation)
-                let links = addLinks(to: full)
-                let html = getStaticHTML(for: links)
-                fullTranslation = convertHTML(text: html)
-            } else {
-                fullTranslation = ""
-            }
-        }
-    }
     
     init(translation: TranslationShort, dbManager: DatabaseManager) {
         self.translation = translation
         self.dbManager = dbManager
+        
     }
     
+    func getForExpanded(newValue: Bool) {
+        if newValue {
+            let full = translation.shortTranslation
+            let links = addLinks(to: full)
+            let html = getStaticHTML(for: links)
+            fullTranslation = convertHTML(text: html)
+        } else {
+            fullTranslation = ""
+        }
+    }
     
     func getFullTranslation(for shortTranslation: TranslationShort) -> String {
         if shortTranslation.isRuDict {
@@ -72,8 +70,8 @@ class TranslationViewModel: ObservableObject, Identifiable {
     private func fullTranslationForEng(wordID: Int64) -> String {
         let rows = dbManager.findRecordInTable(tableName: Dictionaries.enRu.rawValue, columnName: "id", searchValue: wordID)
         guard let firstRow = rows.first else { return "" }
-        var fullTranslation = firstRow[Expression<String>("translation")]
-        self.transcription = firstRow[Expression<String>("transcription")]
+        var fullTranslation = firstRow[SQLite.Expression<String>("translation")]
+        self.transcription = firstRow[SQLite.Expression<String>("transcription")]
         return fullTranslation
         
     }
@@ -113,25 +111,68 @@ class TranslationViewModel: ObservableObject, Identifiable {
         print("No match found for regexp: \(regex) text: \(text)")
         return nil
     }
+
+    // MARK: - Replacement as Callback (start to end)
+    func replaceAllByRegexp(_ pattern: String, _ text: String, with callback: (String) -> String) -> String {
+        do {
+            let regex = try NSRegularExpression(pattern: pattern, options: [])
+            var result = text
+            var offset = 0
+            
+            let matches = regex.matches(in: text, options: [], range: NSRange(text.startIndex..<text.endIndex, in: text))
+            
+            for match in matches {
+                if let range = Range(match.range, in: text) {
+                    let startIndex = result.index(range.lowerBound, offsetBy: offset)
+                    let endIndex = result.index(range.upperBound, offsetBy: offset)
+                    let replacedRange = startIndex..<endIndex
+                    
+                    let matchedText = String(result[replacedRange])
+                    let replacementText = callback(matchedText)
+                    
+                    result.replaceSubrange(replacedRange, with: replacementText)
+                    offset += replacementText.count - matchedText.count
+                }
+            }
+            
+            return result
+        } catch {
+            print("Invalid regex: \(error.localizedDescription)")
+            return text
+        }
+    }
+
+    
     private func addLinks(to article: String) -> String {
         //return article
         let links = article.replacingOccurrences(of: "[\\w']+(?![^<]*>)(?![^<>]*?</abbr>)", with: "<a href='$0'>$0</a>", options: .regularExpression, range: nil)
         return links
     }
     
+    func numberLists(in text: String) -> String {
+        if findByRegexp(by: "<li>.+<li>", in: text) == nil {
+            return text
+        }
+        
+        var index = 0
+        return replaceAllByRegexp("<li>", text) { match in
+            index += 1
+            return "<li>\(index). "
+        }
+    }
+    
     private func getStaticHTML(for string: String) -> String {
         var article = string
-            .replacingOccurrences(of: "<E>", with: "<UL><E>")
-            .replacingOccurrences(of: "</E>", with: "</E></UL>")
-            .replacingOccurrences(of: "<P>", with: "<LI>")
-            .replacingOccurrences(of: "</P>", with: "</LI>")
+            .replacingOccurrences(of: "<E>", with: "<E>")
+            .replacingOccurrences(of: "</E>", with: "</E>")
+            .replacingOccurrences(of: "<P>", with: "<li>")
+            .replacingOccurrences(of: "</P>", with: "</li>")
+            .replacingOccurrences(of: "\n\n", with: "\n")
+        article = numberLists(in: article)
         
         print(article)
         
         return """
-            <!doctype html>
-            <head>
-                <meta charset="utf-8">
                 <style type="text/css">
                     BODY {
                         font: -apple-system-body;
@@ -152,20 +193,16 @@ class TranslationViewModel: ObservableObject, Identifiable {
                         color: inherit;
                         text-decoration: inherit;
                     }
-                    OL,LI {
-                        padding: 0px;
-                        margin: 0px;
-                    }
                     H5{text-align:right;}
+                    p{
+                        margin:0;
+                        padding:0;
+                    }
                 </style>
-            </head>
-            <body>
             <H5>\(self.transcription)</H5>
             <OL>
                 \(article)
             </OL>
-            </body>
-            </html>
             """
     }
     

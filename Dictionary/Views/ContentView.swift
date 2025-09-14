@@ -10,46 +10,83 @@ import Combine
 
 struct ContentView: View {
     @StateObject var vm: MainModelView = MainModelView()
+    
     var body: some View {
-        NavigationStack {
-            List($vm.translations) { $translation in
-                TranslationView(vm: $translation, linkedWord: $vm.searchText)
+        ZStack {
+            List {
+                Section {
+                    ForEach($vm.translations) { $translation in
+                        TranslationView(vm: translation, linkedWord: $vm.searchText)
+                        
+                    }
+                    
+                } footer: {
+                    Spacer()
+                        .frame(height: 100)
+                        .listRowInsets(EdgeInsets())
+
+                }
+                .listRowBackground(Color.blue.opacity(0.05))
                 
+              
             }
+            .offset(y: -25)
+            .background(Color.white)
+            .ignoresSafeArea(edges: .bottom)
             
+            VStack{
+                Spacer()
+                SearchBar(text: $vm.searchText, backgroundColor:.constant(.clear), prompt: "word/слово")
+                    .padding(.horizontal, 16)
+            }
         }
-        .searchable(text: $vm.searchText, prompt: "word/слово")
+
+        .background(Color.secondary)
         .textInputAutocapitalization(.never)
         .scrollDismissesKeyboard(.immediately)
         .onAppear(perform: {
-            vm.searchText = "tree"
+            vm.searchText = ""
         })
-        
+        .gesture(DragGesture()
+            .onEnded({ value in
+                if value.startLocation.x < value.location.x - 24 {
+                    print("Hist", vm.history)
+                    if vm.history.count > 1 {
+                        vm.history.removeLast()
+                        if let last = vm.history.last {
+                            print(last)
+                            vm.searchText = last
+                        }
+                    }
+                }
+            }))
     }
 }
+
 
 #Preview {
     ContentView()
 }
 
 struct TranslationView: View {
-    @Binding var vm: TranslationViewModel
+    @ObservedObject var vm: TranslationViewModel
     @Binding var linkedWord: String
+    @State var isExpanded: Bool = false
     
     var body: some View {
         DisclosureGroup(
-            isExpanded: $vm.isExpanded,
+            isExpanded: $isExpanded,
             content: {
                 Text(vm.fullTranslation)
                     .listRowInsets(EdgeInsets(top: 0,
-                                              leading: 0,
+                                              leading: 10,
                                               bottom: 0,
                                               trailing: 16))
                     .environment(\.openURL, OpenURLAction { url in
                         let word = url.path(percentEncoded: false).dropFirst()
                         linkedWord = String(word)
-                           return .handled
-                       })
+                        return .handled
+                    })
                 
             },
             label: {
@@ -63,9 +100,36 @@ struct TranslationView: View {
                 }
             }
         )
-        
+        .onChange(of: isExpanded) { newValue in
+            vm.getForExpanded(newValue: newValue)
+            
+        }
     }
-
 }
 
 
+struct MyDisclosureStyle: DisclosureGroupStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        VStack {
+            Button {
+                withAnimation {
+                    configuration.isExpanded.toggle()
+                }
+            } label: {
+                HStack(alignment: .firstTextBaseline) {
+                    configuration.label
+                    Spacer()
+                    Text(configuration.isExpanded ? "hide" : "show")
+                        .foregroundColor(.accentColor)
+                        .font(.caption.lowercaseSmallCaps())
+                        .animation(nil, value: configuration.isExpanded)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            if configuration.isExpanded {
+                configuration.content
+            }
+        }
+    }
+}

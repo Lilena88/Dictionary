@@ -25,7 +25,7 @@ class DatabaseManager {
     func findRecordInTable<T>(tableName: String, columnName: String, searchValue: T) -> [Row] {
         do {
             let table = Table(tableName)
-            let column = Expression<String>(columnName)
+            let column = SQLite.Expression<String>(columnName)
             let query = table.filter(column.like("\(searchValue)%")).limit(100)
             return try Array(db.prepare(query))
         } catch {
@@ -82,7 +82,7 @@ class DatabaseManager {
     
     func findByWordWithShortTranslation(tableName: String, searchValue: String) -> Statement? {
         return fetchRows(sql: """
-           SELECT id, word, substr(translation, 0, 100) AS shortTranslation
+           SELECT id, word, translation
            FROM \(tableName)
            WHERE word LIKE '\(searchValue)%'
            LIMIT 100

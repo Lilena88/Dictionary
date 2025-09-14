@@ -17,6 +17,7 @@
 		85B1F6742BBDA01A00BF3428 /* MainModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85B1F6732BBDA01A00BF3428 /* MainModelView.swift */; };
 		85C74FE22BD9579F00E510C1 /* String + Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C74FE12BD9579F00E510C1 /* String + Extensions.swift */; };
 		85C74FE42BDA735800E510C1 /* TranslationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C74FE32BDA735800E510C1 /* TranslationViewModel.swift */; };
+		85C74FE82BF20AC000E510C1 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C74FE72BF20AC000E510C1 /* SearchBar.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,8 @@
 		85B1F6732BBDA01A00BF3428 /* MainModelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainModelView.swift; sourceTree = "<group>"; };
 		85C74FE12BD9579F00E510C1 /* String + Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String + Extensions.swift"; sourceTree = "<group>"; };
 		85C74FE32BDA735800E510C1 /* TranslationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationViewModel.swift; sourceTree = "<group>"; };
+		85C74FE72BF20AC000E510C1 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
+		85D9583D2E4B768400120148 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,13 +66,14 @@
 		85B1F65C2BBD8EF000BF3428 /* Dictionary */ = {
 			isa = PBXGroup;
 			children = (
+				85D9583D2E4B768400120148 /* Info.plist */,
 				85B1F65D2BBD8EF000BF3428 /* DictionaryApp.swift */,
-				85B1F65F2BBD8EF000BF3428 /* ContentView.swift */,
+				85C74FE52BF20A8800E510C1 /* Views */,
 				85C74FE02BD9565E00E510C1 /* ViewModels */,
 				85B1F66D2BBD8F3100BF3428 /* DataBase */,
 				85B1F6612BBD8EF200BF3428 /* Assets.xcassets */,
 				85B1F6632BBD8EF200BF3428 /* Preview Content */,
-				85C74FE12BD9579F00E510C1 /* String + Extensions.swift */,
+				85C74FE62BF20A9400E510C1 /* Helpers */,
 			);
 			path = Dictionary;
 			sourceTree = "<group>";
@@ -98,6 +102,23 @@
 				85C74FE32BDA735800E510C1 /* TranslationViewModel.swift */,
 			);
 			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		85C74FE52BF20A8800E510C1 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				85B1F65F2BBD8EF000BF3428 /* ContentView.swift */,
+				85C74FE72BF20AC000E510C1 /* SearchBar.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		85C74FE62BF20A9400E510C1 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				85C74FE12BD9579F00E510C1 /* String + Extensions.swift */,
+			);
+			path = Helpers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -177,6 +198,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				85C74FE82BF20AC000E510C1 /* SearchBar.swift in Sources */,
 				85B1F6602BBD8EF000BF3428 /* ContentView.swift in Sources */,
 				85B1F65E2BBD8EF000BF3428 /* DictionaryApp.swift in Sources */,
 				85C74FE42BDA735800E510C1 /* TranslationViewModel.swift in Sources */,
@@ -319,9 +341,9 @@
 				DEVELOPMENT_TEAM = 9R966FQAD6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Dictionary/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -350,9 +372,9 @@
 				DEVELOPMENT_TEAM = 9R966FQAD6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Dictionary/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
