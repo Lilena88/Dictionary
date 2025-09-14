@@ -25,6 +25,11 @@ class TranslationViewModel: ObservableObject, Identifiable {
     
     @Published var fullTranslation: AttributedString = ""
     var transcription: String = ""
+    @Published var isExpanded: Bool = false {
+        didSet {
+            getForExpanded(newValue: isExpanded)
+        }
+    }
     
     init(translation: TranslationShort, dbManager: DatabaseManager) {
         self.translation = translation

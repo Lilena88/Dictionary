@@ -45,7 +45,7 @@ struct ContentView: View {
         .textInputAutocapitalization(.never)
         .scrollDismissesKeyboard(.immediately)
         .onAppear(perform: {
-            vm.searchText = ""
+            vm.restoreLastSearchOrInitial()
         })
         .gesture(DragGesture()
             .onEnded({ value in
@@ -71,11 +71,13 @@ struct ContentView: View {
 struct TranslationView: View {
     @ObservedObject var vm: TranslationViewModel
     @Binding var linkedWord: String
-    @State var isExpanded: Bool = false
     
     var body: some View {
         DisclosureGroup(
-            isExpanded: $isExpanded,
+            isExpanded: Binding(
+                get: { vm.isExpanded },
+                set: { vm.isExpanded = $0 }
+            ),
             content: {
                 Text(vm.fullTranslation)
                     .listRowInsets(EdgeInsets(top: 0,
@@ -100,10 +102,6 @@ struct TranslationView: View {
                 }
             }
         )
-        .onChange(of: isExpanded) { newValue in
-            vm.getForExpanded(newValue: newValue)
-            
-        }
     }
 }
 

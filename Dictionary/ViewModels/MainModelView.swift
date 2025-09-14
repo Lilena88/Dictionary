@@ -17,6 +17,7 @@ enum Dictionaries: String {
 }
 
 class MainModelView: ObservableObject {
+    static let lastSearchKey = "LastSearchedWord"
     let engRegex = "^[a-zA-Z]+$"
     let ruRegex = "^[а-яА-ЯёЁ]+$"
     let dbManager = DatabaseManager(databaseName: databaseName)
@@ -36,14 +37,45 @@ class MainModelView: ObservableObject {
             let searchResult = self.search(word: searchText)
             translations = searchResult.map {
                 let vm = TranslationViewModel(translation: $0, dbManager: self.dbManager)
-//                vm.isExpanded = searchResult.count == 1  сразу развернеть если результат поиска состоит из одного значения
                 return vm
+            }
+            if translations.count == 1 {
+                translations[0].isExpanded = true
+            }
+
+            // Persist last non-empty search
+            let trimmed = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.isEmpty {
+                UserDefaults.standard.removeObject(forKey: Self.lastSearchKey)
+            } else {
+                UserDefaults.standard.set(trimmed, forKey: Self.lastSearchKey)
             }
         }
     }
     @Published var translations: [TranslationViewModel] = []
     var history: [String] = []
     
+    // Load initial list on app start (empty request)
+    func loadInitial() {
+        let searchResult = self.search(word: "")
+        translations = searchResult.map {
+            let vm = TranslationViewModel(translation: $0, dbManager: self.dbManager)
+            return vm
+        }
+        if translations.count == 1 {
+            translations[0].isExpanded = true
+        }
+    }
+
+    // Load the last searched word if available; otherwise show initial list
+    func restoreLastSearchOrInitial() {
+        if let last = UserDefaults.standard.string(forKey: Self.lastSearchKey), !last.isEmpty {
+            self.searchText = last
+        } else {
+            loadInitial()
+        }
+    }
+
     func search(word: String) -> [TranslationShort] {
         var tableName: Dictionaries = .enRu
         if word.containsCyrillic {
