@@ -15,11 +15,9 @@ struct ContentView: View {
         ZStack {
             List {
                 Section {
-                    ForEach($vm.translations) { $translation in
+                    ForEach(vm.translations) { translation in
                         TranslationView(vm: translation, linkedWord: $vm.searchText)
-                        
                     }
-                    
                 } footer: {
                     Spacer()
                         .frame(height: 100)
@@ -32,6 +30,7 @@ struct ContentView: View {
             }
             .offset(y: -25)
             .background(Color.white)
+            .transaction { t in t.animation = nil }
             .ignoresSafeArea(edges: .bottom)
             
             VStack{
@@ -80,10 +79,8 @@ struct TranslationView: View {
             ),
             content: {
                 Text(vm.fullTranslation)
-                    .listRowInsets(EdgeInsets(top: 0,
-                                              leading: 10,
-                                              bottom: 0,
-                                              trailing: 16))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, 10)
                     .environment(\.openURL, OpenURLAction { url in
                         let word = url.path(percentEncoded: false).dropFirst()
                         linkedWord = String(word)
@@ -102,6 +99,8 @@ struct TranslationView: View {
                 }
             }
         )
+        .disclosureGroupStyle(MyDisclosureStyle())
+        .transaction { t in t.animation = nil }
     }
 }
 
@@ -110,16 +109,14 @@ struct MyDisclosureStyle: DisclosureGroupStyle {
     func makeBody(configuration: Configuration) -> some View {
         VStack {
             Button {
-                withAnimation {
-                    configuration.isExpanded.toggle()
-                }
+                configuration.isExpanded.toggle()
             } label: {
                 HStack(alignment: .firstTextBaseline) {
                     configuration.label
                     Spacer()
-                    Text(configuration.isExpanded ? "hide" : "show")
+                    Image(systemName: "chevron.right")
+                        .rotationEffect(.degrees(configuration.isExpanded ? 90 : 0))
                         .foregroundColor(.accentColor)
-                        .font(.caption.lowercaseSmallCaps())
                         .animation(nil, value: configuration.isExpanded)
                 }
                 .contentShape(Rectangle())
@@ -129,5 +126,7 @@ struct MyDisclosureStyle: DisclosureGroupStyle {
                 configuration.content
             }
         }
+        .animation(nil, value: configuration.isExpanded)
+        .transaction { t in t.animation = nil }
     }
 }
