@@ -13,6 +13,7 @@ struct SearchBar: View {
     @Binding var text: String 
     @Binding var backgroundColor: Color
     var prompt: String
+    var onSubmit: (() -> Void)? = nil
     @FocusState private var isEditing: FocusedTextField?
     
     var body: some View {
@@ -49,6 +50,7 @@ struct SearchBar: View {
                     self.isEditing = .yes
                 }
                 .onSubmit {
+                    onSubmit?()
                     self.isEditing = nil
                 }
             

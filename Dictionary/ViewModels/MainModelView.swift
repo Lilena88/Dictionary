@@ -18,10 +18,13 @@ enum Dictionaries: String {
 
 class MainModelView: ObservableObject {
     static let lastSearchKey = "LastSearchedWord"
+    static let recentSearchesKey = "RecentSearches"
     let engRegex = "^[a-zA-Z]+$"
     let ruRegex = "^[а-яА-ЯёЁ]+$"
     let dbManager = DatabaseManager(databaseName: databaseName)
     private var currentText = ""
+    // Simple score that can be incremented by user interactions
+    @Published var score: Int = 0
     @Published var searchText = "" {
         didSet {
             guard searchText != currentText else {
@@ -54,6 +57,18 @@ class MainModelView: ObservableObject {
     }
     @Published var translations: [TranslationViewModel] = []
     var history: [String] = []
+    @Published var recentSearches: [String] = []
+    private let maxRecentCount = 20
+
+    init() {
+        loadRecentSearches()
+    }
+
+    // MARK: - Score
+    func incrementScore(by amount: Int = 1) {
+        guard amount != 0 else { return }
+        score += amount
+    }
     
     // Load initial list on app start (empty request)
     func loadInitial() {
@@ -74,6 +89,32 @@ class MainModelView: ObservableObject {
         } else {
             loadInitial()
         }
+    }
+
+    // MARK: - Recents
+    func commitSearch(_ term: String? = nil) {
+        let raw = term ?? self.searchText
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        if let idx = recentSearches.firstIndex(of: trimmed) {
+            recentSearches.remove(at: idx)
+        }
+        recentSearches.insert(trimmed, at: 0)
+        if recentSearches.count > maxRecentCount {
+            recentSearches = Array(recentSearches.prefix(maxRecentCount))
+        }
+        saveRecentSearches()
+        UserDefaults.standard.set(trimmed, forKey: Self.lastSearchKey)
+    }
+
+    private func loadRecentSearches() {
+        if let arr = UserDefaults.standard.array(forKey: Self.recentSearchesKey) as? [String] {
+            recentSearches = arr
+        }
+    }
+
+    private func saveRecentSearches() {
+        UserDefaults.standard.set(recentSearches, forKey: Self.recentSearchesKey)
     }
 
     func search(word: String) -> [TranslationShort] {

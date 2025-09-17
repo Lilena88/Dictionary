@@ -6,17 +6,35 @@
 //
 
 import SwiftUI
-import Combine
 
 struct ContentView: View {
-    @StateObject var vm: MainModelView = MainModelView()
+    @StateObject private var viewModel = MainModelView()
     
     var body: some View {
         ZStack {
             List {
+                if !viewModel.recentSearches.isEmpty {
+                    Section("Recent") {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(viewModel.recentSearches, id: \.self) { term in
+                                    Button(action: {
+                                        viewModel.searchText = term
+                                        viewModel.commitSearch(term)
+                                    }) {
+                                        Text(term)
+                                            .lineLimit(1)
+                                    }
+                                    .buttonStyle(GlassChipStyle())
+                                }
+                            }
+                            .padding(.vertical, 6)
+                        }
+                    }
+                }
                 Section {
-                    ForEach(vm.translations) { translation in
-                        TranslationView(vm: translation, linkedWord: $vm.searchText)
+                    ForEach(viewModel.translations) { translation in
+                        TranslationView(viewModel: translation, linkedWord: $viewModel.searchText)
                     }
                 } footer: {
                     Spacer()
@@ -33,9 +51,12 @@ struct ContentView: View {
             .transaction { t in t.animation = nil }
             .ignoresSafeArea(edges: .bottom)
             
-            VStack{
+            VStack {
                 Spacer()
-                SearchBar(text: $vm.searchText, backgroundColor:.constant(.clear), prompt: "word/слово")
+                SearchBar(text: $viewModel.searchText,
+                          backgroundColor:.constant(.clear),
+                          prompt: "word/слово",
+                          onSubmit: { viewModel.commitSearch() })
                     .padding(.horizontal, 16)
             }
         }
@@ -44,21 +65,11 @@ struct ContentView: View {
         .textInputAutocapitalization(.never)
         .scrollDismissesKeyboard(.immediately)
         .onAppear(perform: {
-            vm.restoreLastSearchOrInitial()
+            viewModel.restoreLastSearchOrInitial()
         })
-        .gesture(DragGesture()
-            .onEnded({ value in
-                if value.startLocation.x < value.location.x - 24 {
-                    print("Hist", vm.history)
-                    if vm.history.count > 1 {
-                        vm.history.removeLast()
-                        if let last = vm.history.last {
-                            print(last)
-                            vm.searchText = last
-                        }
-                    }
-                }
-            }))
+        .gesture(
+            DragGesture().onEnded(handleBackSwipe(_:))
+        )
     }
 }
 
@@ -67,18 +78,31 @@ struct ContentView: View {
     ContentView()
 }
 
-struct TranslationView: View {
-    @ObservedObject var vm: TranslationViewModel
+private extension ContentView {
+    func handleBackSwipe(_ value: DragGesture.Value) {
+        if value.startLocation.x < value.location.x - 24 {
+            if viewModel.history.count > 1 {
+                viewModel.history.removeLast()
+                if let last = viewModel.history.last {
+                    viewModel.searchText = last
+                }
+            }
+        }
+    }
+}
+
+private struct TranslationView: View {
+    @ObservedObject var viewModel: TranslationViewModel
     @Binding var linkedWord: String
     
     var body: some View {
         DisclosureGroup(
             isExpanded: Binding(
-                get: { vm.isExpanded },
-                set: { vm.isExpanded = $0 }
+                get: { viewModel.isExpanded },
+                set: { viewModel.isExpanded = $0 }
             ),
             content: {
-                Text(vm.fullTranslation)
+                Text(viewModel.fullTranslation)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.leading, 10)
                     .environment(\.openURL, OpenURLAction { url in
@@ -90,10 +114,10 @@ struct TranslationView: View {
             },
             label: {
                 HStack {
-                    Text(vm.word)
+                    Text(viewModel.word)
                         .lineLimit(1)
                         .layoutPriority(1)
-                    Text(vm.shortTranslation)
+                    Text(viewModel.shortTranslation)
                         .lineLimit(1)
                         .foregroundColor(.gray)
                 }
@@ -105,7 +129,7 @@ struct TranslationView: View {
 }
 
 
-struct MyDisclosureStyle: DisclosureGroupStyle {
+private struct MyDisclosureStyle: DisclosureGroupStyle {
     func makeBody(configuration: Configuration) -> some View {
         VStack {
             Button {
@@ -128,5 +152,25 @@ struct MyDisclosureStyle: DisclosureGroupStyle {
         }
         .animation(nil, value: configuration.isExpanded)
         .transaction { t in t.animation = nil }
+    }
+}
+
+private struct GlassChipStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.subheadline)
+            .padding(.vertical, 6)
+            .padding(.horizontal, 12)
+            .background(
+                .ultraThinMaterial,
+                in: Capsule()
+            )
+            .overlay(
+                Capsule()
+                    .stroke(Color.white.opacity(0.35), lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 2)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }
