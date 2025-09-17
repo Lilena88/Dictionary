@@ -43,7 +43,6 @@ struct ContentView: View {
 
                 }
                 .listRowBackground(Color.blue.opacity(0.05))
-                
               
             }
             .offset(y: -25)
@@ -123,7 +122,7 @@ private struct TranslationView: View {
                 }
             }
         )
-        .disclosureGroupStyle(MyDisclosureStyle())
+        //.disclosureGroupStyle(MyDisclosureStyle())
         .transaction { t in t.animation = nil }
     }
 }

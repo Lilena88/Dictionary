@@ -12,8 +12,8 @@ class TranslationViewModel: ObservableObject, Identifiable {
     let dbManager: DatabaseManager
     private var translation: TranslationShort
     
-    var id: Int64 {
-        return translation.id
+    var id: String {
+        return translation.word
     }
     var word: String {
         return translation.word
@@ -52,7 +52,7 @@ class TranslationViewModel: ObservableObject, Identifiable {
         if shortTranslation.isRuDict {
             return fullTranslationForRus(ruWord: shortTranslation.word, with: shortTranslation.shortTranslation)
         } else {
-            return fullTranslationForEng(wordID: shortTranslation.id)
+            return fullTranslationForEng(word: shortTranslation.word)
         }
         
     }
@@ -61,8 +61,8 @@ class TranslationViewModel: ObservableObject, Identifiable {
         guard let engWordsArray = enTranslations(for: engTranslations) else { return "" }
         var fullArticle = ""
         for row in engWordsArray {
-            let engWord = row[1] as? String ?? ""
-            let translation = row[2] as? String ?? ""
+            let engWord = row[0] as? String ?? ""
+            let translation = row[1] as? String ?? ""
             let engTranslatedArticle = getTranslateOnly(for: ruWord, in: translation, engWord: engWord)
             fullArticle += "<LI>\(engTranslatedArticle)</LI>"
         }
@@ -72,13 +72,13 @@ class TranslationViewModel: ObservableObject, Identifiable {
         
     }
     
-    private func fullTranslationForEng(wordID: Int64) -> String {
-        let rows = dbManager.findRecordInTable(tableName: Dictionaries.enRu.rawValue, columnName: "id", searchValue: wordID)
-        guard let firstRow = rows.first else { return "" }
-        var fullTranslation = firstRow[SQLite.Expression<String>("translation")]
-        self.transcription = firstRow[SQLite.Expression<String>("transcription")]
+    private func fullTranslationForEng(word: String) -> String {
+        guard let rows = dbManager.fetchRows(sql: "SELECT translation, transcription FROM \(Dictionaries.enRu.rawValue) WHERE word = '\(word)' LIMIT 1") else { return "" }
+        var iterator = rows.makeIterator()
+        guard let firstRow = iterator.next() else { return "" }
+        let fullTranslation = firstRow[0] as? String ?? ""
+        self.transcription = firstRow[1] as? String ?? ""
         return fullTranslation
-        
     }
   
     private func enTranslations(for ruWords: String) -> Statement? {

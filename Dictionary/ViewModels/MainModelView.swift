@@ -125,9 +125,8 @@ class MainModelView: ObservableObject {
         guard let words = dbManager.findRecordWithShortTranslation(tableName: tableName.rawValue, columnName: "word", searchValue: word) else { return [] }
         return words.map {
             return TranslationShort(isRuDict: word.containsCyrillic,
-                                    id: $0[0] as? Int64 ?? 0,
-                                    word: $0[1] as? String ?? "" ,
-                                    shortTranslation: $0[2] as? String ?? "")
+                                    word: $0[0] as? String ?? "" ,
+                                    shortTranslation: $0[1] as? String ?? "")
             
         }
         
