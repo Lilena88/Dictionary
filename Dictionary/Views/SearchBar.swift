@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 enum FocusedTextField {
     case yes
 }
@@ -23,7 +24,16 @@ struct SearchBar: View {
                 .frame(height: 30)
                 .padding(7)
                 .padding(.horizontal, 25)
-                .background(BlurView())
+                .background(
+                    Group {
+                        if #available(iOS 26.0, *) {
+                            Color.clear
+                                .glassEffect(.regular)
+                        } else {
+                            BlurView()
+                        }
+                    }
+                )
                 .cornerRadius(30)
                 .overlay(
                     HStack {

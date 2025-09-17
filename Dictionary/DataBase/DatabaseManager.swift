@@ -46,7 +46,7 @@ class DatabaseManager {
     
     func findMultipleValues(words: [String]) -> Statement? {
         return fetchRows(sql: """
-        select id, word, translation
+        select word, translation
         from enRu
         where word IN ("\(words.joined(separator: "\",\""))")
         order by instr(",\(words.joined(separator: ",")),",     ',' || word || ',');
@@ -82,7 +82,7 @@ class DatabaseManager {
     
     func findByWordWithShortTranslation(tableName: String, searchValue: String) -> Statement? {
         return fetchRows(sql: """
-           SELECT id, word, translation
+           SELECT word, translation
            FROM \(tableName)
            WHERE word LIKE '\(searchValue)%'
            LIMIT 100
@@ -92,7 +92,6 @@ class DatabaseManager {
 
 struct Translation {
     let isRuDict: Bool
-    let id: Int
     let word: String
     let translation: String
     let transcription: String
@@ -103,7 +102,6 @@ struct Translation {
 
 struct TranslationShort {
     let isRuDict: Bool
-    let id: Int64
     let word: String
     let shortTranslation: String
     var shortTranslationEdited: String {
