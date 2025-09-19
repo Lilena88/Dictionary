@@ -72,7 +72,7 @@ class MainModelView: ObservableObject {
                 "привет", 
                 "world",
                 "мир",
-                "beautiful",
+                "tree",
                 "красивый",
                 "language",
                 "язык",

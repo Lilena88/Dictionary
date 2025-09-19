@@ -121,26 +121,20 @@ class TranslationViewModel: ObservableObject, Identifiable {
     func replaceAllByRegexp(_ pattern: String, _ text: String, with callback: (String) -> String) -> String {
         do {
             let regex = try NSRegularExpression(pattern: pattern, options: [])
-            var result = text
+            let mutableText = NSMutableString(string: text)
+            let nsText = text as NSString
+            let matches = regex.matches(in: text, options: [], range: NSRange(location: 0, length: nsText.length))
             var offset = 0
             
-            let matches = regex.matches(in: text, options: [], range: NSRange(text.startIndex..<text.endIndex, in: text))
-            
             for match in matches {
-                if let range = Range(match.range, in: text) {
-                    let startIndex = result.index(range.lowerBound, offsetBy: offset)
-                    let endIndex = result.index(range.upperBound, offsetBy: offset)
-                    let replacedRange = startIndex..<endIndex
-                    
-                    let matchedText = String(result[replacedRange])
-                    let replacementText = callback(matchedText)
-                    
-                    result.replaceSubrange(replacedRange, with: replacementText)
-                    offset += replacementText.count - matchedText.count
-                }
+                let matchedText = nsText.substring(with: match.range)
+                let replacementText = callback(matchedText)
+                let adjustedRange = NSRange(location: match.range.location + offset, length: match.range.length)
+                mutableText.replaceCharacters(in: adjustedRange, with: replacementText)
+                offset += replacementText.count - match.range.length
             }
             
-            return result
+            return mutableText as String
         } catch {
             print("Invalid regex: \(error.localizedDescription)")
             return text
