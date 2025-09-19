@@ -8,10 +8,26 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var viewModel = MainModelView()
+    @StateObject private var viewModel: MainModelView
+    
+    init(viewModel: MainModelView? = nil) {
+        _viewModel = StateObject(wrappedValue: viewModel ?? MainModelView())
+    }
     
     var body: some View {
         ZStack {
+            // Beautiful gradient background
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color(red: 0.7, green: 0.9, blue: 1.0),      // Light sky blue
+                    Color(red: 0.98, green: 0.95, blue: 0.85),  // Pale cream/yellow
+                    Color(red: 0.6, green: 0.8, blue: 0.8)      // Muted teal
+                ]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            
             List {
                 if !viewModel.recentSearches.isEmpty {
                     Section("Recent") {
@@ -28,25 +44,35 @@ struct ContentView: View {
                                     .buttonStyle(GlassChipStyle())
                                 }
                             }
-                            .padding(.vertical, 6)
+                            .padding(.horizontal, 0)
+                            .padding(.vertical, 0)
                         }
                     }
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                 }
                 Section {
                     ForEach(viewModel.translations) { translation in
-                        TranslationView(viewModel: translation, linkedWord: $viewModel.searchText)
+                        TranslationView(
+                            viewModel: translation,
+                            linkedWord: $viewModel.searchText,
+                            onWordTapped: { term in
+                                viewModel.commitSearch(term)
+                            }
+                        )
                     }
                 } footer: {
                     Spacer()
-                        .frame(height: 100)
+                        .frame(height: 10)
                         .listRowInsets(EdgeInsets())
 
                 }
-                .listRowBackground(Color.blue.opacity(0.05))
+                .listRowBackground(Color.white.opacity(0.3))
               
             }
-            .offset(y: -25)
-            .background(Color.white)
+            .offset(y: -10)
+            .background(Color.clear)
+            .scrollContentBackground(.hidden)
             .transaction { t in t.animation = nil }
             .ignoresSafeArea(edges: .bottom)
             
@@ -59,8 +85,6 @@ struct ContentView: View {
                     .padding(.horizontal, 16)
             }
         }
-
-        .background(Color.secondary)
         .textInputAutocapitalization(.never)
         .scrollDismissesKeyboard(.immediately)
         .onAppear(perform: {
@@ -74,7 +98,7 @@ struct ContentView: View {
 
 
 #Preview {
-    ContentView()
+    ContentView(viewModel: MainModelView(previewData: true))
 }
 
 private extension ContentView {
@@ -93,6 +117,7 @@ private extension ContentView {
 private struct TranslationView: View {
     @ObservedObject var viewModel: TranslationViewModel
     @Binding var linkedWord: String
+    var onWordTapped: ((String) -> Void)? = nil
     
     var body: some View {
         DisclosureGroup(
@@ -107,6 +132,7 @@ private struct TranslationView: View {
                     .environment(\.openURL, OpenURLAction { url in
                         let word = url.path(percentEncoded: false).dropFirst()
                         linkedWord = String(word)
+                        onWordTapped?(String(word))
                         return .handled
                     })
                 
@@ -168,7 +194,7 @@ private struct GlassChipStyle: ButtonStyle {
                 Capsule()
                     .stroke(Color.white.opacity(0.35), lineWidth: 1)
             )
-            .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 2)
+            //.shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 2)
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }

@@ -63,6 +63,26 @@ class MainModelView: ObservableObject {
     init() {
         loadRecentSearches()
     }
+    
+    // Convenience initializer for preview mode
+    init(previewData: Bool) {
+        if previewData {
+            recentSearches = [
+                "hello",
+                "привет", 
+                "world",
+                "мир",
+                "beautiful",
+                "красивый",
+                "language",
+                "язык",
+                "dictionary",
+                "словарь"
+            ]
+        } else {
+            loadRecentSearches()
+        }
+    }
 
     // MARK: - Score
     func incrementScore(by amount: Int = 1) {

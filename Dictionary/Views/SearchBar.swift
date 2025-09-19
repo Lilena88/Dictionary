@@ -29,7 +29,7 @@ struct SearchBar: View {
                     Group {
                         if #available(iOS 26.0, *) {
                             Color.clear
-                                .glassEffect(.regular)
+                                .glassEffect(.clear)
                         } else {
                             BlurView()
                         }
