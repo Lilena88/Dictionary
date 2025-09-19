@@ -167,9 +167,11 @@ class TranslationViewModel: ObservableObject, Identifiable {
             .replacingOccurrences(of: "<P>", with: "<li>")
             .replacingOccurrences(of: "</P>", with: "</li>")
             .replacingOccurrences(of: "\n\n", with: "\n")
-        article = numberLists(in: article)
         
-        print(article)
+        // Add space after comma if needed
+        article = article.replacingOccurrences(of: ",(?! )", with: ", ", options: .regularExpression)
+        
+        article = numberLists(in: article)
         
         return """
                 <style type="text/css">
