@@ -7,6 +7,7 @@
 import UIKit
 import SwiftUI
 import SQLite
+import AVFoundation
 
 class TranslationViewModel: ObservableObject, Identifiable {
     let dbManager: DatabaseManager
@@ -214,5 +215,24 @@ class TranslationViewModel: ObservableObject, Identifiable {
         } else {
             return AttributedString(text)
         }
+    }
+    
+    // MARK: - Pronunciation
+    func pronounceWord() {
+        let synthesizer = AVSpeechSynthesizer()
+        let utterance = AVSpeechUtterance(string: word)
+        
+        // Set language based on dictionary type
+        if translation.isRuDict {
+            utterance.voice = AVSpeechSynthesisVoice(language: "ru-RU")
+        } else {
+            utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+        }
+        
+        utterance.rate = 0.5 // Slightly slower for clarity
+        utterance.pitchMultiplier = 1.0
+        utterance.volume = 1.0
+        
+        synthesizer.speak(utterance)
     }
 }

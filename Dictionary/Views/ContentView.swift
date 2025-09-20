@@ -143,6 +143,19 @@ private struct TranslationView: View {
                     Text(viewModel.word)
                         .lineLimit(1)
                         .layoutPriority(1)
+                    
+                    Button(action: {
+                        viewModel.pronounceWord()
+                    }) {
+                        Image(systemName: "speaker.2.fill")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .padding(4)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    Spacer()
+                    
                     Text(viewModel.shortTranslation)
                         .lineLimit(1)
                         .foregroundColor(.gray)
@@ -150,7 +163,7 @@ private struct TranslationView: View {
             }
         )
         //.disclosureGroupStyle(MyDisclosureStyle())
-        .transaction { t in t.animation = nil }
+        //.transaction { t in t.animation = nil }
     }
 }
 
