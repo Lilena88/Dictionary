@@ -19,9 +19,9 @@ struct ContentView: View {
             // Beautiful gradient background
             LinearGradient(
                 gradient: Gradient(colors: [
-                    Color(red: 0.7, green: 0.9, blue: 1.0),      // Light sky blue
-                    Color(red: 0.98, green: 0.95, blue: 0.85),  // Pale cream/yellow
-                    Color(red: 0.6, green: 0.8, blue: 0.8)      // Muted teal
+                    Color(red: 0.85, green: 0.95, blue: 1.0),   // Very light blue
+                    Color.white,                                 // Pure white
+                    Color(red: 0.8, green: 0.9, blue: 0.95)      // Muted teal
                 ]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -61,9 +61,10 @@ struct ContentView: View {
                             }
                         )
                     }
-                } footer: {
+                }
+                footer: {
                     Spacer()
-                        .frame(height: 10)
+                        .frame(height: 100)
                         .listRowInsets(EdgeInsets())
 
                 }
