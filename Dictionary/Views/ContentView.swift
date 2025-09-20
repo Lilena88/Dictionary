@@ -21,7 +21,7 @@ struct ContentView: View {
                 gradient: Gradient(colors: [
                     Color(red: 0.85, green: 0.95, blue: 1.0),   // Very light blue
                     Color.white,                                 // Pure white
-                    Color(red: 0.8, green: 0.9, blue: 0.95)      // Muted teal
+                    Color(red: 0.8, green: 0.9, blue: 0.96)      // Muted teal
                 ]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -136,7 +136,7 @@ private struct TranslationView: View {
                         onWordTapped?(String(word))
                         return .handled
                     })
-                
+
             },
             label: {
                 HStack {
@@ -188,7 +188,7 @@ private struct GlassChipStyle: ButtonStyle {
             .padding(.vertical, 6)
             .padding(.horizontal, 12)
             .background(
-                .ultraThinMaterial,
+                Color.white.opacity(0.3),
                 in: Capsule()
             )
             .overlay(
