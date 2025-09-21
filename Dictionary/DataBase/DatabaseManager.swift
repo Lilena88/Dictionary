@@ -32,6 +32,11 @@ final class DatabaseManager {
         }
     }
     
+    /// Escapes single quotes in SQL string literals to prevent syntax errors
+    private func escapeSQLString(_ string: String) -> String {
+        return string.replacingOccurrences(of: "'", with: "''")
+    }
+    
     // MARK: - Public Database Operations
     
     /// Searches for words with fuzzy matching support
@@ -57,10 +62,11 @@ final class DatabaseManager {
     
     /// Gets exact word matches for the given search term
     func getExactWordMatches(in tableName: String, searchTerm: String, isRuDict: Bool) -> [TranslationShort] {
+        let escapedSearchTerm = escapeSQLString(searchTerm)
         guard let statement = execute(sql: """
             SELECT word, SUBSTR(translation, 1, 100) AS translation
             FROM \(tableName)
-            WHERE word LIKE '\(searchTerm)%'
+            WHERE word LIKE '\(escapedSearchTerm)%'
             LIMIT 100
             """) else { return [] }
         
@@ -75,7 +81,8 @@ final class DatabaseManager {
     
     /// Finds English translations for multiple Russian words
     func getEnglishTranslationsForWords(_ words: [String]) -> Statement? {
-        let wordList = words.joined(separator: "\",\"")
+        let escapedWords = words.map { escapeSQLString($0) }
+        let wordList = escapedWords.joined(separator: "\",\"")
         return execute(sql: """
             SELECT word, translation
             FROM enRu
@@ -86,10 +93,11 @@ final class DatabaseManager {
     
     /// Gets full translation and transcription for a specific English word
     func getFullTranslationAndTranscription(forWord word: String) -> (translation: String, transcription: String)? {
+        let escapedWord = escapeSQLString(word)
         guard let statement = execute(sql: """
             SELECT translation, transcription 
             FROM enRu 
-            WHERE word = '\(word)' 
+            WHERE word = '\(escapedWord)' 
             LIMIT 1
             """),
               let firstRow = statement.makeIterator().next() else { return nil }
