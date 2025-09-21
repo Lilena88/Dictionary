@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2645C7902E7FFAA7003320A4 /* SpeechSynthesizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2645C78F2E7FFAA7003320A4 /* SpeechSynthesizer.swift */; };
 		852BC3A12BCEA563004D91F2 /* dict.sqlite3 in Resources */ = {isa = PBXBuildFile; fileRef = 852BC3A02BCEA563004D91F2 /* dict.sqlite3 */; };
 		85B1F65E2BBD8EF000BF3428 /* DictionaryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85B1F65D2BBD8EF000BF3428 /* DictionaryApp.swift */; };
 		85B1F6602BBD8EF000BF3428 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85B1F65F2BBD8EF000BF3428 /* ContentView.swift */; };
@@ -18,11 +19,12 @@
 		85C74FE22BD9579F00E510C1 /* String + Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C74FE12BD9579F00E510C1 /* String + Extensions.swift */; };
 		85C74FE42BDA735800E510C1 /* TranslationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C74FE32BDA735800E510C1 /* TranslationViewModel.swift */; };
 		85C74FE82BF20AC000E510C1 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C74FE72BF20AC000E510C1 /* SearchBar.swift */; };
-		D774FBF8B52F42E9AAB36F7D /* HTMLProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D774FBF8B52F42E9AAB36F7E /* HTMLProcessor.swift */; };
 		C733EE2DA125474AA204E708 /* RegexHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = C733EE2DA125474AA204E709 /* RegexHelper.swift */; };
+		D774FBF8B52F42E9AAB36F7D /* HTMLProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D774FBF8B52F42E9AAB36F7E /* HTMLProcessor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2645C78F2E7FFAA7003320A4 /* SpeechSynthesizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechSynthesizer.swift; sourceTree = "<group>"; };
 		852BC3A02BCEA563004D91F2 /* dict.sqlite3 */ = {isa = PBXFileReference; lastKnownFileType = file; path = dict.sqlite3; sourceTree = "<group>"; };
 		85B1F65A2BBD8EF000BF3428 /* Dictionary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dictionary.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		85B1F65D2BBD8EF000BF3428 /* DictionaryApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryApp.swift; sourceTree = "<group>"; };
@@ -35,8 +37,8 @@
 		85C74FE32BDA735800E510C1 /* TranslationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationViewModel.swift; sourceTree = "<group>"; };
 		85C74FE72BF20AC000E510C1 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
 		85D9583D2E4B768400120148 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		D774FBF8B52F42E9AAB36F7E /* HTMLProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLProcessor.swift; sourceTree = "<group>"; };
 		C733EE2DA125474AA204E709 /* RegexHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegexHelper.swift; sourceTree = "<group>"; };
+		D774FBF8B52F42E9AAB36F7E /* HTMLProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLProcessor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +122,7 @@
 		85C74FE62BF20A9400E510C1 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				2645C78F2E7FFAA7003320A4 /* SpeechSynthesizer.swift */,
 				85C74FE12BD9579F00E510C1 /* String + Extensions.swift */,
 				D774FBF8B52F42E9AAB36F7E /* HTMLProcessor.swift */,
 				C733EE2DA125474AA204E709 /* RegexHelper.swift */,
@@ -208,6 +211,7 @@
 				85B1F6602BBD8EF000BF3428 /* ContentView.swift in Sources */,
 				85B1F65E2BBD8EF000BF3428 /* DictionaryApp.swift in Sources */,
 				85C74FE42BDA735800E510C1 /* TranslationViewModel.swift in Sources */,
+				2645C7902E7FFAA7003320A4 /* SpeechSynthesizer.swift in Sources */,
 				85B1F6722BBD91AA00BF3428 /* DatabaseManager.swift in Sources */,
 				85B1F6742BBDA01A00BF3428 /* MainModelView.swift in Sources */,
 				85C74FE22BD9579F00E510C1 /* String + Extensions.swift in Sources */,

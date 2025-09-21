@@ -140,10 +140,6 @@ private struct TranslationView: View {
             },
             label: {
                 HStack {
-                    Text(viewModel.word)
-                        .lineLimit(1)
-                        .layoutPriority(1)
-                    
                     Button(action: {
                         viewModel.pronounceWord()
                     }) {
@@ -153,6 +149,10 @@ private struct TranslationView: View {
                             .padding(4)
                     }
                     .buttonStyle(PlainButtonStyle())
+                    
+                    Text(viewModel.word)
+                        .lineLimit(1)
+                        .layoutPriority(1)
                     
                     Spacer()
                     

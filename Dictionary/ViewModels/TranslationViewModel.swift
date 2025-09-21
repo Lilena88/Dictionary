@@ -93,6 +93,7 @@ final class TranslationViewModel: ObservableObject, Identifiable {
     // MARK: - Speech Synthesis
     
     func pronounceWord() {
-        speechSynthesizer.pronounceWord(word, isRussian: translation.isRuDict)
+        // Auto-detection inside synthesizer handles language; provide override only if needed.
+        speechSynthesizer.pronounceWord(word, forceRussian: translation.isRuDict)
     }
 }
