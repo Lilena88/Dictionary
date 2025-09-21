@@ -8,13 +8,13 @@
 import UIKit
 import SwiftUI
 import SQLite
-import AVFoundation
 
 /// A view model that manages dictionary translation data and provides
-/// formatted display content with HTML rendering and speech synthesis.
+/// formatted display content with HTML rendering.
 final class TranslationViewModel: ObservableObject, Identifiable {
     let dbManager: DatabaseManager
     private let translation: TranslationShort
+    private let speechSynthesizer = SpeechSynthesizer()
     
     var id: String { translation.word }
     var word: String { translation.word }
@@ -65,17 +65,17 @@ final class TranslationViewModel: ObservableObject, Identifiable {
     }
     
     private func getEnglishTranslation() -> String {
-        guard let rows = dbManager.execute(sql: "SELECT translation, transcription FROM \(Dictionaries.enRu.rawValue) WHERE word = '\(translation.word)' LIMIT 1"),
-              let firstRow = rows.makeIterator().next() else { return "" }
+        guard let result = dbManager.getFullTranslationAndTranscription(forWord: translation.word) else { 
+            return "" 
+        }
         
-        let fullTranslation = firstRow[0] as? String ?? ""
-        self.transcription = firstRow[1] as? String ?? ""
-        return fullTranslation
+        self.transcription = result.transcription
+        return result.translation
     }
     
     private func getEnglishTranslations() -> Statement? {
         let words = translation.shortTranslation.components(separatedBy: ",")
-        return dbManager.findTranslations(for: words)
+        return dbManager.getEnglishTranslationsForWords(words)
     }
     
     private func extractTranslationForWord(_ article: String, engWord: String) -> String {
@@ -93,16 +93,6 @@ final class TranslationViewModel: ObservableObject, Identifiable {
     // MARK: - Speech Synthesis
     
     func pronounceWord() {
-        let synthesizer = AVSpeechSynthesizer()
-        let utterance = AVSpeechUtterance(string: word)
-        
-        utterance.voice = AVSpeechSynthesisVoice(
-            language: translation.isRuDict ? "ru-RU" : "en-US"
-        )
-        utterance.rate = 0.5
-        utterance.pitchMultiplier = 1.0
-        utterance.volume = 1.0
-        
-        synthesizer.speak(utterance)
+        speechSynthesizer.pronounceWord(word, isRussian: translation.isRuDict)
     }
 }
