@@ -74,10 +74,10 @@ struct HTMLProcessor {
     }
     
     private static func addNumberedLists(to text: String) -> String {
-        guard RegexHelper.findMatch(pattern: "<li>.+<li>", in: text) != nil else { return text }
+        guard RegexHelper.findMatch(pattern: "(?i)<li>.+<li>", in: text) != nil else { return text }
         
         var index = 0
-        return RegexHelper.replaceAllMatches(pattern: "<li>", in: text) { _ in
+        return RegexHelper.replaceAllMatches(pattern: "(?i)<li>", in: text) { _ in
             index += 1
             return "<li>\(index). "
         }
