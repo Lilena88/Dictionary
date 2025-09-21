@@ -150,13 +150,6 @@ class MainModelView: ObservableObject {
         if word.containsCyrillic {
             tableName = .ruEn
         }
-        guard let words = dbManager.fuzzySearch(in: tableName.rawValue, for: word) else { return [] }
-        return words.map {
-            return TranslationShort(isRuDict: word.containsCyrillic,
-                                    word: $0[0] as? String ?? "" ,
-                                    shortTranslation: $0[1] as? String ?? "")
-            
-        }
-        
+        return dbManager.searchWordsWithFuzzyMatching(in: tableName.rawValue, searchTerm: word)
     }
 }

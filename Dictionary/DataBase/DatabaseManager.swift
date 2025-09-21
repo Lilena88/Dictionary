@@ -19,8 +19,10 @@ final class DatabaseManager {
         self.db = try Connection(dbPath)
     }
     
-    /// Executes raw SQL query
-    func execute(sql: String) -> Statement? {
+    // MARK: - Private SQL Execution
+    
+    /// Executes raw SQL query - internal use only
+    private func execute(sql: String) -> Statement? {
         do {
             print("Executing SQL: \(sql)")
             return try db.prepare(sql)
@@ -30,8 +32,49 @@ final class DatabaseManager {
         }
     }
     
-    /// Finds translations for multiple words
-    func findTranslations(for words: [String]) -> Statement? {
+    // MARK: - Public Database Operations
+    
+    /// Searches for words with fuzzy matching support
+    func searchWordsWithFuzzyMatching(in tableName: String, searchTerm: String) -> [TranslationShort] {
+        let cleanValue = searchTerm.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        let isRuDict = searchTerm.containsCyrillic
+        
+        guard cleanValue.count > 2 else {
+            return getExactWordMatches(in: tableName, searchTerm: cleanValue, isRuDict: isRuDict)
+        }
+        
+        // Try exact match first
+        var results = getExactWordMatches(in: tableName, searchTerm: cleanValue, isRuDict: isRuDict)
+        if !results.isEmpty { return results }
+        
+        // Try with one character removed
+        results = getExactWordMatches(in: tableName, searchTerm: String(cleanValue.dropLast()), isRuDict: isRuDict)
+        if !results.isEmpty { return results }
+        
+        // Try with two characters removed
+        return getExactWordMatches(in: tableName, searchTerm: String(cleanValue.dropLast(2)), isRuDict: isRuDict)
+    }
+    
+    /// Gets exact word matches for the given search term
+    func getExactWordMatches(in tableName: String, searchTerm: String, isRuDict: Bool) -> [TranslationShort] {
+        guard let statement = execute(sql: """
+            SELECT word, SUBSTR(translation, 1, 100) AS translation
+            FROM \(tableName)
+            WHERE word LIKE '\(searchTerm)%'
+            LIMIT 100
+            """) else { return [] }
+        
+        return statement.map { row in
+            TranslationShort(
+                isRuDict: isRuDict,
+                word: row[0] as? String ?? "",
+                shortTranslation: row[1] as? String ?? ""
+            )
+        }
+    }
+    
+    /// Finds English translations for multiple Russian words
+    func getEnglishTranslationsForWords(_ words: [String]) -> Statement? {
         let wordList = words.joined(separator: "\",\"")
         return execute(sql: """
             SELECT word, translation
@@ -41,34 +84,22 @@ final class DatabaseManager {
             """)
     }
     
-    /// Searches with fuzzy matching (tries progressively shorter strings)
-    func fuzzySearch(in tableName: String, for searchValue: String) -> Statement? {
-        let cleanValue = searchValue.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+    /// Gets full translation and transcription for a specific English word
+    func getFullTranslationAndTranscription(forWord word: String) -> (translation: String, transcription: String)? {
+        guard let statement = execute(sql: """
+            SELECT translation, transcription 
+            FROM enRu 
+            WHERE word = '\(word)' 
+            LIMIT 1
+            """),
+              let firstRow = statement.makeIterator().next() else { return nil }
         
-        guard cleanValue.count > 2 else {
-            return findExactMatch(in: tableName, for: cleanValue)
-        }
-        
-        // Try exact match first
-        var result = findExactMatch(in: tableName, for: cleanValue)
-        if hasResults(result) { return result }
-        
-        // Try with one character removed
-        result = findExactMatch(in: tableName, for: String(cleanValue.dropLast()))
-        if hasResults(result) { return result }
-        
-        // Try with two characters removed
-        return findExactMatch(in: tableName, for: String(cleanValue.dropLast(2)))
+        let translation = firstRow[0] as? String ?? ""
+        let transcription = firstRow[1] as? String ?? ""
+        return (translation: translation, transcription: transcription)
     }
     
-    private func findExactMatch(in tableName: String, for searchValue: String) -> Statement? {
-        return execute(sql: """
-            SELECT word, SUBSTR(translation, 1, 100) AS translation
-            FROM \(tableName)
-            WHERE word LIKE '\(searchValue)%'
-            LIMIT 100
-            """)
-    }
+    // MARK: - Helper Methods
     
     private func hasResults(_ statement: Statement?) -> Bool {
         guard let statement = statement else { return false }
