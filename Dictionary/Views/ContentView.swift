@@ -77,9 +77,9 @@ struct ContentView: View {
             VStack {
                 Spacer()
                 SearchBar(text: $viewModel.searchText,
-                          backgroundColor: .clear,
+                          backgroundColor: .constant(Color.clear),
                           prompt: "word/слово",
-                          onSubmit: viewModel.commitSearch)
+                          onSubmit: { viewModel.commitSearch() })
                     .padding(.horizontal, 16)
             }
         }
