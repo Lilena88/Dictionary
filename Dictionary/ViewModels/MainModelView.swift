@@ -21,7 +21,15 @@ class MainModelView: ObservableObject {
     static let recentSearchesKey = "RecentSearches"
     let engRegex = "^[a-zA-Z]+$"
     let ruRegex = "^[а-яА-ЯёЁ]+$"
-    let dbManager = DatabaseManager(databaseName: databaseName)
+    
+    lazy var dbManager: DatabaseManager = {
+        do {
+            return try DatabaseManager(databaseName: databaseName)
+        } catch {
+            fatalError("Failed to initialize database: \(error)")
+        }
+    }()
+    
     private var currentText = ""
     // Simple score that can be incremented by user interactions
     @Published var score: Int = 0
@@ -142,7 +150,7 @@ class MainModelView: ObservableObject {
         if word.containsCyrillic {
             tableName = .ruEn
         }
-        guard let words = dbManager.findRecordWithShortTranslation(tableName: tableName.rawValue, columnName: "word", searchValue: word) else { return [] }
+        guard let words = dbManager.fuzzySearch(in: tableName.rawValue, for: word) else { return [] }
         return words.map {
             return TranslationShort(isRuDict: word.containsCyrillic,
                                     word: $0[0] as? String ?? "" ,

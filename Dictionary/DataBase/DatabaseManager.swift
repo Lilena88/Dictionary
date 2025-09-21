@@ -8,95 +8,89 @@
 import Foundation
 import SQLite
 
-class DatabaseManager {
-    var db: Connection
+/// Manages SQLite database operations for the dictionary app
+final class DatabaseManager {
+    private let db: Connection
     
-    init(databaseName: String) {
-        do {
-            guard let dbPath = Bundle.main.path(forResource: databaseName, ofType: "sqlite3") else {
-                fatalError("Database file not found in the resources.")
-            }
-            self.db = try Connection(dbPath)
-        } catch {
-            fatalError("Error connecting to the database: \(error)")
+    init(databaseName: String) throws {
+        guard let dbPath = Bundle.main.path(forResource: databaseName, ofType: "sqlite3") else {
+            throw DatabaseError.fileNotFound
         }
+        self.db = try Connection(dbPath)
     }
     
-    func findRecordInTable<T>(tableName: String, columnName: String, searchValue: T) -> [Row] {
+    /// Executes raw SQL query
+    func execute(sql: String) -> Statement? {
         do {
-            let table = Table(tableName)
-            let column = SQLite.Expression<String>(columnName)
-            let query = table.filter(column.like("\(searchValue)%")).limit(100)
-            return try Array(db.prepare(query))
+            print("Executing SQL: \(sql)")
+            return try db.prepare(sql)
         } catch {
-            print("Error finding records: \(error)")
-            return []
-        }
-    }
-    
-    func fetchRows(sql: String) -> Statement? {
-        do {
-            let results = try db.prepare(sql)
-            return results
-        } catch {
-            print("[fetchRows] error: \(error) sql: \(sql)")
+            print("SQL error: \(error)")
             return nil
         }
     }
     
-    func findMultipleValues(words: [String]) -> Statement? {
-        return fetchRows(sql: """
-        select word, translation
-        from enRu
-        where word IN ("\(words.joined(separator: "\",\""))")
-        order by instr(",\(words.joined(separator: ",")),",     ',' || word || ',');
-        """)
+    /// Finds translations for multiple words
+    func findTranslations(for words: [String]) -> Statement? {
+        let wordList = words.joined(separator: "\",\"")
+        return execute(sql: """
+            SELECT word, translation
+            FROM enRu
+            WHERE word IN ("\(wordList)")
+            ORDER BY instr(",\(words.joined(separator: ",")),", ',' || word || ',')
+            """)
     }
     
-    func findRecordWithShortTranslation(tableName: String, columnName: String, searchValue: String) -> Statement? {
-        let preparedValue = searchValue
-            .lowercased()
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+    /// Searches with fuzzy matching (tries progressively shorter strings)
+    func fuzzySearch(in tableName: String, for searchValue: String) -> Statement? {
+        let cleanValue = searchValue.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         
-        var result = findByWordWithShortTranslation(tableName: tableName, searchValue: searchValue)
-        
-        if preparedValue.count <= 2 {
-            return result
+        guard cleanValue.count > 2 else {
+            return findExactMatch(in: tableName, for: cleanValue)
         }
         
-        if (result?.reduce(0) { $0 + $1.count } ?? 0) == 0 {
-            result = findByWordWithShortTranslation(tableName: tableName, searchValue: substr(string: preparedValue, endOffset: -1))
-        }
+        // Try exact match first
+        var result = findExactMatch(in: tableName, for: cleanValue)
+        if hasResults(result) { return result }
         
-        if (result?.reduce(0) { $0 + $1.count } ?? 0) == 0 {
-            result = findByWordWithShortTranslation(tableName: tableName, searchValue: substr(string: preparedValue, endOffset: -2))
-        }
+        // Try with one character removed
+        result = findExactMatch(in: tableName, for: String(cleanValue.dropLast()))
+        if hasResults(result) { return result }
         
-        return result
+        // Try with two characters removed
+        return findExactMatch(in: tableName, for: String(cleanValue.dropLast(2)))
     }
     
-    func substr(string: String, endOffset: Int) -> String {
-        let endIndex = string.index(string.endIndex, offsetBy: endOffset)
-        return String(string[..<endIndex])
+    private func findExactMatch(in tableName: String, for searchValue: String) -> Statement? {
+        return execute(sql: """
+            SELECT word, SUBSTR(translation, 1, 100) AS translation
+            FROM \(tableName)
+            WHERE word LIKE '\(searchValue)%'
+            LIMIT 100
+            """)
     }
     
-    func findByWordWithShortTranslation(tableName: String, searchValue: String) -> Statement? {
-        return fetchRows(sql: """
-           SELECT word, translation
-           FROM \(tableName)
-           WHERE word LIKE '\(searchValue)%'
-           LIMIT 100
-           """)
+    private func hasResults(_ statement: Statement?) -> Bool {
+        guard let statement = statement else { return false }
+        return statement.makeIterator().next() != nil
     }
 }
 
+// MARK: - Database Error
+enum DatabaseError: Error {
+    case fileNotFound
+    case connectionFailed
+}
+// MARK: - Translation Models
 struct Translation {
     let isRuDict: Bool
     let word: String
     let translation: String
     let transcription: String
-    var translationShort: String {
-        return String(translation.prefix(100)).replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+    
+    var shortTranslation: String {
+        translation.prefix(100)
+            .replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
     }
 }
 
@@ -104,8 +98,9 @@ struct TranslationShort {
     let isRuDict: Bool
     let word: String
     let shortTranslation: String
-    var shortTranslationEdited: String {
-        return shortTranslation
+    
+    var formattedTranslation: String {
+        shortTranslation
             .replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
             .replacingOccurrences(of: ",", with: ", ")
             .replacingOccurrences(of: "  ", with: " ")

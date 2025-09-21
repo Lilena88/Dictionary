@@ -18,7 +18,7 @@ final class TranslationViewModel: ObservableObject, Identifiable {
     
     var id: String { translation.word }
     var word: String { translation.word }
-    var shortTranslation: String { translation.shortTranslationEdited }
+    var shortTranslation: String { translation.formattedTranslation }
     
     @Published var fullTranslation: AttributedString = ""
     @Published private(set) var transcription: String = ""
@@ -65,7 +65,7 @@ final class TranslationViewModel: ObservableObject, Identifiable {
     }
     
     private func getEnglishTranslation() -> String {
-        guard let rows = dbManager.fetchRows(sql: "SELECT translation, transcription FROM \(Dictionaries.enRu.rawValue) WHERE word = '\(translation.word)' LIMIT 1"),
+        guard let rows = dbManager.execute(sql: "SELECT translation, transcription FROM \(Dictionaries.enRu.rawValue) WHERE word = '\(translation.word)' LIMIT 1"),
               let firstRow = rows.makeIterator().next() else { return "" }
         
         let fullTranslation = firstRow[0] as? String ?? ""
@@ -75,7 +75,7 @@ final class TranslationViewModel: ObservableObject, Identifiable {
     
     private func getEnglishTranslations() -> Statement? {
         let words = translation.shortTranslation.components(separatedBy: ",")
-        return dbManager.findMultipleValues(words: words)
+        return dbManager.findTranslations(for: words)
     }
     
     private func extractTranslationForWord(_ article: String, engWord: String) -> String {
