@@ -30,6 +30,25 @@ struct RegexHelper {
         }
     }
     
+    /// Finds all regex matches in the given text.
+    static func findAllMatches(pattern: String, in text: String) -> [String] {
+        do {
+            let regex = try NSRegularExpression(
+                pattern: pattern,
+                options: [.caseInsensitive, .dotMatchesLineSeparators]
+            )
+            let range = NSRange(text.startIndex..., in: text)
+            let matches = regex.matches(in: text, options: [], range: range)
+            
+            return matches.compactMap { match in
+                guard let stringRange = Range(match.range, in: text) else { return nil }
+                return String(text[stringRange])
+            }
+        } catch {
+            return []
+        }
+    }
+    
     /// Replaces all matches of a pattern with the result of a replacement closure.
     static func replaceAllMatches(pattern: String, in text: String, with replacement: (String) -> String) -> String {
         do {

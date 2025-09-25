@@ -59,8 +59,8 @@ final class TranslationViewModel: ObservableObject, Identifiable {
             guard let engWord = row[0] as? String,
                   let translation = row[1] as? String else { return nil }
             
-            let translatedArticle = extractTranslationForWord(translation, engWord: engWord)
-            return "<LI>\(translatedArticle)</LI>"
+            let translatedArticles = extractAllTranslationsForWord(translation, engWord: engWord)
+            return translatedArticles.joined()
         }.joined()
     }
     
@@ -78,16 +78,34 @@ final class TranslationViewModel: ObservableObject, Identifiable {
         return dbManager.getEnglishTranslationsForWords(words)
     }
     
-    private func extractTranslationForWord(_ article: String, engWord: String) -> String {
-        let pattern = "[^\n]*?\(translation.word)[^\n]*"
+    private func extractAllTranslationsForWord(_ article: String, engWord: String) -> [String] {
+        // First, extract all <P>...</P> blocks
+        let allPBlocksPattern = "<P>.*?</P>"
+        let allPBlocks = RegexHelper.findAllMatches(pattern: allPBlocksPattern, in: article)
         
-        if let match = RegexHelper.findMatch(pattern: pattern, in: article) {
-            let cleanMatch = match
+        // Filter blocks that contain the target word at the beginning with word boundaries
+        let matchingBlocks = allPBlocks.filter { pBlock in
+            // Remove <P> tag to get the content
+            let content = pBlock.replacingOccurrences(of: "<P>", with: "")
+            
+            // Check if the word appears at the beginning of the content with word boundary
+            let pattern = "\\b\(NSRegularExpression.escapedPattern(for: translation.word))\\b"
+            return RegexHelper.findMatch(pattern: pattern, in: content) != nil
+        }
+        
+        if matchingBlocks.isEmpty {
+            return ["<LI>\(engWord)</LI>"]
+        }
+        
+        return matchingBlocks.map { pBlock in
+            // Remove the outer <P> and </P> tags
+            let content = "\(engWord) ― \(pBlock)"
                 .replacingOccurrences(of: "<P>", with: "")
                 .replacingOccurrences(of: "</P>", with: "")
-            return "\(engWord) ― \(cleanMatch)"
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            return "<LI>\(content)</LI>"
         }
-        return engWord
     }
     
     // MARK: - Speech Synthesis
