@@ -50,7 +50,11 @@ class MainModelView: ObservableObject {
                 let vm = TranslationViewModel(translation: $0, dbManager: self.dbManager)
                 return vm
             }
-            if translations.count == 1 {
+            
+            // Expand word if there's a full match with searched word or only one result
+            if let exactMatch = findExactMatch(searchTerm: searchText, in: translations) {
+                exactMatch.isExpanded = true
+            } else if translations.count == 1 {
                 translations[0].isExpanded = true
             }
 
@@ -151,5 +155,17 @@ class MainModelView: ObservableObject {
             tableName = .ruEn
         }
         return dbManager.searchWordsWithFuzzyMatching(in: tableName.rawValue, searchTerm: word)
+    }
+    
+    // MARK: - Helper Methods
+    
+    /// Finds an exact match for the search term in the translations list
+    private func findExactMatch(searchTerm: String, in translations: [TranslationViewModel]) -> TranslationViewModel? {
+        let cleanSearchTerm = searchTerm.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleanSearchTerm.isEmpty else { return nil }
+        
+        return translations.first { translation in
+            translation.word.lowercased() == cleanSearchTerm
+        }
     }
 }
