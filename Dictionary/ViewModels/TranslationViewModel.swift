@@ -17,7 +17,8 @@ final class TranslationViewModel: ObservableObject, Identifiable {
     private let speechSynthesizer = SpeechSynthesizer()
     
     var id: String { translation.word }
-    var word: String { translation.word }
+    var word: String { translation.displayWord }
+    var actualWord: String { translation.word }
     var shortTranslation: String { translation.formattedTranslation }
     
     @Published var fullTranslation: AttributedString = ""
@@ -59,7 +60,10 @@ final class TranslationViewModel: ObservableObject, Identifiable {
             guard let engWord = row[0] as? String,
                   let translation = row[1] as? String else { return nil }
             
-            let translatedArticles = extractAllTranslationsForWord(translation, engWord: engWord)
+            let stress = row[2] as? String
+            let displayWord = stress ?? engWord
+            
+            let translatedArticles = extractAllTranslationsForWord(translation, engWord: engWord, displayWord: displayWord)
             return translatedArticles.joined()
         }.joined()
     }
@@ -78,7 +82,7 @@ final class TranslationViewModel: ObservableObject, Identifiable {
         return dbManager.getEnglishTranslationsForWords(words)
     }
     
-    private func extractAllTranslationsForWord(_ article: String, engWord: String) -> [String] {
+    private func extractAllTranslationsForWord(_ article: String, engWord: String, displayWord: String) -> [String] {
         // First, extract all <P>...</P> blocks
         let allPBlocksPattern = "<P>.*?</P>"
         let allPBlocks = RegexHelper.findAllMatches(pattern: allPBlocksPattern, in: article)
@@ -94,12 +98,12 @@ final class TranslationViewModel: ObservableObject, Identifiable {
         }
         
         if matchingBlocks.isEmpty {
-            return ["<LI>\(engWord)</LI>"]
+            return ["<LI>\(displayWord)</LI>"]
         }
         
         return matchingBlocks.map { pBlock in
             // Remove the outer <P> and </P> tags
-            let content = "\(engWord) ― \(pBlock)"
+            let content = "\(displayWord) ― \(pBlock)"
                 .replacingOccurrences(of: "<P>", with: "")
                 .replacingOccurrences(of: "</P>", with: "")
                 .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -111,7 +115,7 @@ final class TranslationViewModel: ObservableObject, Identifiable {
     // MARK: - Speech Synthesis
     
     func pronounceWord() {
-        // Auto-detection inside synthesizer handles language; provide override only if needed.
-        speechSynthesizer.pronounceWord(word, forceRussian: translation.isRuDict)
+        // Use the actual word (without stress marks) for pronunciation
+        speechSynthesizer.pronounceWord(actualWord, forceRussian: translation.isRuDict)
     }
 }

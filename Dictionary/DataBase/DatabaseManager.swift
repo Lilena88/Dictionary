@@ -63,10 +63,15 @@ final class DatabaseManager {
     /// Gets exact word matches for the given search term
     func getExactWordMatches(in tableName: String, searchTerm: String, isRuDict: Bool) -> [TranslationShort] {
         let escapedSearchTerm = escapeSQLString(searchTerm)
+        
+        // If no search term, sort by popularity; otherwise sort alphabetically
+        let orderClause = searchTerm.isEmpty ? "ORDER BY popularity DESC, word" : "ORDER BY word"
+        
         guard let statement = execute(sql: """
-            SELECT word, SUBSTR(translation, 1, 100) AS translation
+            SELECT word, SUBSTR(translation, 1, 100) AS translation, stress
             FROM \(tableName)
             WHERE word LIKE '\(escapedSearchTerm)%'
+            \(orderClause)
             LIMIT 100
             """) else { return [] }
         
@@ -74,7 +79,8 @@ final class DatabaseManager {
             TranslationShort(
                 isRuDict: isRuDict,
                 word: row[0] as? String ?? "",
-                shortTranslation: row[1] as? String ?? ""
+                shortTranslation: row[1] as? String ?? "",
+                stress: row[2] as? String
             )
         }
     }
@@ -84,7 +90,7 @@ final class DatabaseManager {
         let escapedWords = words.map { escapeSQLString($0) }
         let wordList = escapedWords.joined(separator: "\",\"")
         return execute(sql: """
-            SELECT word, translation
+            SELECT word, translation, stress
             FROM enRu
             WHERE word IN ("\(wordList)")
             ORDER BY instr(",\(words.joined(separator: ",")),", ',' || word || ',')
@@ -137,6 +143,11 @@ struct TranslationShort {
     let isRuDict: Bool
     let word: String
     let shortTranslation: String
+    let stress: String?
+    
+    var displayWord: String {
+        stress ?? word
+    }
     
     var formattedTranslation: String {
         shortTranslation

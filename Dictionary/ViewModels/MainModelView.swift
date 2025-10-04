@@ -165,7 +165,7 @@ class MainModelView: ObservableObject {
         guard !cleanSearchTerm.isEmpty else { return nil }
         
         return translations.first { translation in
-            translation.word.lowercased() == cleanSearchTerm
+            translation.actualWord.lowercased() == cleanSearchTerm
         }
     }
 }
