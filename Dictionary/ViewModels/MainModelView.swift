@@ -150,11 +150,29 @@ class MainModelView: ObservableObject {
     }
 
     func search(word: String) -> [TranslationShort] {
-        var tableName: Dictionaries = .enRu
+        // If input contains Cyrillic, search Russian dictionary
         if word.containsCyrillic {
-            tableName = .ruEn
+            return dbManager.searchWordsWithFuzzyMatching(in: Dictionaries.ruEn.rawValue, searchTerm: word)
         }
-        return dbManager.searchWordsWithFuzzyMatching(in: tableName.rawValue, searchTerm: word)
+        
+        // For Latin input, check if it might be transliterated Russian
+        if TransliterationDetector.looksLikeTransliteration(word) {
+            // Try transliterating to Cyrillic and searching Russian dictionary
+            let cyrillicVariants = TransliterationDetector.transliterateToCyrillic(word)
+            
+            for variant in cyrillicVariants {
+                let results = dbManager.searchWordsWithFuzzyMatching(
+                    in: Dictionaries.ruEn.rawValue, 
+                    searchTerm: variant
+                )
+                if !results.isEmpty {
+                    return results
+                }
+            }
+        }
+        
+        // Default: search English dictionary
+        return dbManager.searchWordsWithFuzzyMatching(in: Dictionaries.enRu.rawValue, searchTerm: word)
     }
     
     // MARK: - Helper Methods

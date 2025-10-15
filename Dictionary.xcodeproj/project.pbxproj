@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2645C7902E7FFAA7003320A4 /* SpeechSynthesizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2645C78F2E7FFAA7003320A4 /* SpeechSynthesizer.swift */; };
+		852BC3A02C8FFBB8003320A5 /* TransliterationDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852BC39F2C8FFBB8003320A5 /* TransliterationDetector.swift */; };
 		852BC3A12BCEA563004D91F2 /* dict.sqlite3 in Resources */ = {isa = PBXBuildFile; fileRef = 852BC3A02BCEA563004D91F2 /* dict.sqlite3 */; };
 		85B1F65E2BBD8EF000BF3428 /* DictionaryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85B1F65D2BBD8EF000BF3428 /* DictionaryApp.swift */; };
 		85B1F6602BBD8EF000BF3428 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85B1F65F2BBD8EF000BF3428 /* ContentView.swift */; };
@@ -25,6 +26,7 @@
 
 /* Begin PBXFileReference section */
 		2645C78F2E7FFAA7003320A4 /* SpeechSynthesizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechSynthesizer.swift; sourceTree = "<group>"; };
+		852BC39F2C8FFBB8003320A5 /* TransliterationDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransliterationDetector.swift; sourceTree = "<group>"; };
 		852BC3A02BCEA563004D91F2 /* dict.sqlite3 */ = {isa = PBXFileReference; lastKnownFileType = file; path = dict.sqlite3; sourceTree = "<group>"; };
 		85B1F65A2BBD8EF000BF3428 /* Dictionary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dictionary.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		85B1F65D2BBD8EF000BF3428 /* DictionaryApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryApp.swift; sourceTree = "<group>"; };
@@ -126,6 +128,7 @@
 				85C74FE12BD9579F00E510C1 /* String + Extensions.swift */,
 				D774FBF8B52F42E9AAB36F7E /* HTMLProcessor.swift */,
 				C733EE2DA125474AA204E709 /* RegexHelper.swift */,
+				852BC39F2C8FFBB8003320A5 /* TransliterationDetector.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -212,6 +215,7 @@
 				85B1F65E2BBD8EF000BF3428 /* DictionaryApp.swift in Sources */,
 				85C74FE42BDA735800E510C1 /* TranslationViewModel.swift in Sources */,
 				2645C7902E7FFAA7003320A4 /* SpeechSynthesizer.swift in Sources */,
+				852BC3A02C8FFBB8003320A5 /* TransliterationDetector.swift in Sources */,
 				85B1F6722BBD91AA00BF3428 /* DatabaseManager.swift in Sources */,
 				85B1F6742BBDA01A00BF3428 /* MainModelView.swift in Sources */,
 				85C74FE22BD9579F00E510C1 /* String + Extensions.swift in Sources */,
