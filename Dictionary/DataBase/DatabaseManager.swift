@@ -65,10 +65,12 @@ final class DatabaseManager {
         let escapedSearchTerm = escapeSQLString(searchTerm)
         
         // If no search term, sort by popularity; otherwise sort alphabetically
-        let orderClause = searchTerm.isEmpty ? "ORDER BY popularity DESC, word" : "ORDER BY word"
+        let orderClause = searchTerm.isEmpty
+        ? "ORDER BY popularity DESC, LENGTH(word), word COLLATE NOCASE"
+        : "ORDER BY word COLLATE NOCASE"
         
         guard let statement = execute(sql: """
-            SELECT word, SUBSTR(translation, 1, 100) AS translation, stress
+            SELECT word, SUBSTR(translation, 1, 100) AS translation, stress, popularity
             FROM \(tableName)
             WHERE word LIKE '\(escapedSearchTerm)%'
             \(orderClause)
@@ -80,7 +82,8 @@ final class DatabaseManager {
                 isRuDict: isRuDict,
                 word: row[0] as? String ?? "",
                 shortTranslation: row[1] as? String ?? "",
-                stress: row[2] as? String
+                stress: row[2] as? String,
+                popularity: row[3] as? Double
             )
         }
     }
@@ -144,6 +147,7 @@ struct TranslationShort {
     let word: String
     let shortTranslation: String
     let stress: String?
+    let popularity: Double?
     
     var displayWord: String {
         stress ?? word
@@ -154,5 +158,19 @@ struct TranslationShort {
             .replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
             .replacingOccurrences(of: ",", with: ", ")
             .replacingOccurrences(of: "  ", with: " ")
+    }
+    
+    /// Returns the number of stars (0-3) based on frequency per million words
+    var popularityStars: Int {
+        guard let frequency = popularity, frequency > 0 else { return 0 }
+        
+        // Very high frequency (100+ per million) = 3 stars
+        if frequency >= 100 { return 3 }
+        // High frequency (10-99 per million) = 2 stars
+        if frequency >= 10 { return 2 }
+        // Medium frequency (1-9 per million) = 1 star
+        if frequency >= 1 { return 1 }
+        // Low frequency (< 1 per million) = "Rare" label
+        return 0
     }
 }

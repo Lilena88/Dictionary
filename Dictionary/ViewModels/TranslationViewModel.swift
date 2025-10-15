@@ -20,6 +20,8 @@ final class TranslationViewModel: ObservableObject, Identifiable {
     var word: String { translation.displayWord }
     var actualWord: String { translation.word }
     var shortTranslation: String { translation.formattedTranslation }
+    var popularityStars: Int { translation.popularityStars }
+    var hasPopularity: Bool { translation.popularity != nil }
     
     @Published var fullTranslation: AttributedString = ""
     @Published private(set) var transcription: String = ""

@@ -125,8 +125,9 @@ private struct TranslationView: View {
                     .padding(.leading, 10)
                     .environment(\.openURL, OpenURLAction { url in
                         let word = String(url.path(percentEncoded: false).dropFirst())
-                        linkedWord = word
-                        onWordTapped?(word)
+                        let cleanWord = word.removingStressMarks
+                        linkedWord = cleanWord
+                        onWordTapped?(cleanWord)
                         return .handled
                     })
 
@@ -150,6 +151,11 @@ private struct TranslationView: View {
                     Text(viewModel.shortTranslation)
                         .lineLimit(1)
                         .foregroundColor(.gray)
+                    
+                    if viewModel.hasPopularity {
+                        PopularityIndicator(stars: viewModel.popularityStars)
+                            .padding(.leading, 8)
+                    }
                 }
             }
         )
@@ -174,3 +180,43 @@ private struct GlassChipStyle: ButtonStyle {
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }
+
+private struct PopularityIndicator: View {
+    let stars: Int
+    
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(0..<3, id: \.self) { index in
+                Image(systemName: "star.fill")
+                    .font(.system(size: 8))
+                    .foregroundStyle(
+                        index < stars ?
+                        LinearGradient(
+                            colors: [
+                                Color(red: 1.0, green: 0.84, blue: 0.0),
+                                Color(red: 1.0, green: 0.75, blue: 0.0)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ) :
+                        LinearGradient(
+                            colors: [
+                                Color.gray.opacity(0.3),
+                                Color.gray.opacity(0.3)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .shadow(
+                        color: index < stars ? Color.yellow.opacity(0.4) : Color.clear,
+                        radius: 1,
+                        x: 0,
+                        y: 0.5
+                    )
+            }
+        }
+    }
+}
+
+
